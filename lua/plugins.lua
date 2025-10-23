@@ -16,6 +16,9 @@ local plugins = {
   },
   { "windwp/nvim-autopairs",      opts = {} },
   { "nvim-mini/mini.ai",          opts = {} },
+  "tpope/vim-dadbod",
+  "kristijanhusak/vim-dadbod-completion",
+  "kristijanhusak/vim-dadbod-ui"
 }
 
 -- Load plugins from lua/plugins
