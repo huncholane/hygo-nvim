@@ -6,8 +6,9 @@ return {
   opts = {
     cmdline = { enabled = false },
     sources = {
+      default = { "lsp", "buffer", "snippets", "path" },
       per_filetype = {
-        sql = { "dadbod" }
+        sql = { "dadbod", "buffer" }
       },
       providers = {
         dadbod = { module = "vim_dadbod_completion.blink" }
