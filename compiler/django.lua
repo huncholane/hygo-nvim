@@ -1,6 +1,10 @@
 vim.cmd [[
 set efm=
 
+"Colored logging handler
+"[1m[34m2025-10-29T12:25:27[0m [1m[32mINFO[0m [1m[36mapi/fedexcrew/authentication/serializers.py:55[0m [1m[36mroot[0m:[1m[35mserializers[0m [1m[37mLOG MESSAGE[0m
+set efm+=%.%#3%.m%t%.%#36m%f:%l%.%#37m%m%.[0m
+
 "Snag the django test error itself
 set efm+=%EERROR:\ %o\ (%m)
 
