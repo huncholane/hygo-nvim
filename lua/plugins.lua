@@ -19,6 +19,7 @@ local plugins = {
   "tpope/vim-dadbod",
   "kristijanhusak/vim-dadbod-completion",
   "kristijanhusak/vim-dadbod-ui",
+  "tpope/vim-dispatch"
 }
 
 -- Load plugins from lua/plugins
