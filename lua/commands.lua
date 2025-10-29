@@ -43,6 +43,29 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end
 })
 
+local function get_make_completions()
+  local handle = io.popen("grep -o -P '^\\w.*(?=:)' Makefile 2>/dev/null")
+  if not handle then return {} end
+
+  local result = {}
+  for line in handle:lines() do
+    table.insert(result, line)
+  end
+  handle:close()
+
+  return result
+end
+
+vim.api.nvim_create_user_command("DJ", function(args)
+  vim.cmd("Comp django")
+  vim.cmd("set makeprg=make")
+  vim.cmd("Make " .. args.args)
+end, {
+  nargs = "*",
+  complete = get_make_completions,
+  desc = "Run make commands with django compiler"
+})
+
 vim.api.nvim_create_user_command("TabRename", function(opts)
   vim.t.tabname = opts.args
   vim.cmd.redrawtabline()
