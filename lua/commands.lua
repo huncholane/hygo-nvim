@@ -27,6 +27,15 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end
 })
 
+vim.api.nvim_create_user_command("Comp", function(args)
+  vim.cmd("comp " .. args.args)
+  vim.g.compiler = args.args
+end, {
+  nargs = 1,
+  complete = "compiler",
+  desc = "Wrapper around compiler to make current compiler available to UI"
+})
+
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*.tf",
   callback = function(_)

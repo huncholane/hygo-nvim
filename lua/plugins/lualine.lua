@@ -39,14 +39,9 @@ return {
       lualine_x = {
         "encoding",
         "fileformat",
-        {
-          function()
-            local mp = vim.o.makeprg or ""
-            if mp == "" then return "" end
-            local exe = vim.fn.fnamemodify(vim.split(mp, " ")[1], ":t")
-            return "⚙️ " .. exe
-          end,
-        },
+        { function()
+          return "⚙️ " .. vim.g.compiler
+        end },
         "filetype",
       },
       lualine_y = { "progress" },
