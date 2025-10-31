@@ -19,7 +19,8 @@ local plugins = {
   "tpope/vim-dadbod",
   "kristijanhusak/vim-dadbod-completion",
   "kristijanhusak/vim-dadbod-ui",
-  "tpope/vim-dispatch"
+  "tpope/vim-dispatch",
+  { "lewis6991/gitsigns.nvim", opts = {} }
 }
 
 -- Load plugins from lua/plugins
