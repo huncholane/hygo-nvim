@@ -21,8 +21,11 @@ return {
         require("none-ls.formatting.mbake"),
         require("null-ls.builtins.diagnostics.checkmake"),
         require("null-ls.builtins.formatting.isort"),
+        require("null-ls.builtins.formatting.isort"),
         require("none-ls.formatting.taplo"),
-        require("null-ls.builtins.diagnostics.hadolint")
+        require("null-ls.builtins.formatting.black"),
+        require("null-ls.builtins.formatting.stylua"),
+        require("null-ls.builtins.diagnostics.hadolint"),
       },
     })
   end,
