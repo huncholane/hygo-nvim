@@ -24,7 +24,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
   callback = function(_)
     vim.bo.filetype = "env"
     vim.bo.syntax = "sh"
-  end
+  end,
 })
 
 vim.api.nvim_create_user_command("Comp", function(args)
@@ -33,19 +33,21 @@ vim.api.nvim_create_user_command("Comp", function(args)
 end, {
   nargs = 1,
   complete = "compiler",
-  desc = "Wrapper around compiler to make current compiler available to UI"
+  desc = "Wrapper around compiler to make current compiler available to UI",
 })
 
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*.tf",
   callback = function(_)
     vim.bo.filetype = "terraform"
-  end
+  end,
 })
 
 local function get_make_completions()
   local handle = io.popen("grep -o -P '^\\w.*(?=:)' Makefile 2>/dev/null")
-  if not handle then return {} end
+  if not handle then
+    return {}
+  end
 
   local result = {}
   for line in handle:lines() do
@@ -63,7 +65,15 @@ vim.api.nvim_create_user_command("DJ", function(args)
 end, {
   nargs = "*",
   complete = get_make_completions,
-  desc = "Run make commands with django compiler"
+  desc = "Run make commands with django compiler",
+})
+
+vim.api.nvim_create_user_command("Tab", function(args)
+  vim.cmd("tabnew")
+  vim.cmd("tcd " .. args.args)
+end, {
+  nargs = 1,
+  complete = "dir",
 })
 
 vim.api.nvim_create_user_command("TabRename", function(opts)
@@ -81,10 +91,7 @@ vim.api.nvim_create_user_command("BufClean", function()
 
   local deleted = 0
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_loaded(buf)
-        and not visible[buf]
-        and vim.api.nvim_buf_get_option(buf, "buflisted")
-    then
+    if vim.api.nvim_buf_is_loaded(buf) and not visible[buf] and vim.api.nvim_buf_get_option(buf, "buflisted") then
       vim.api.nvim_buf_delete(buf, { force = true })
       deleted = deleted + 1
     end
@@ -128,7 +135,6 @@ command! Killqfjobs for j in g:qfjobs | call jobstop(j[0]) | endfor | set g:qfjo
 command! Restartqfjobs for j in g:qfjobs | call jobstop(j[0]) | let j[0] = jobstart(j[1]) | endfor
 command! -nargs=1 Resize silent! exe 'resize '.(&lines*<args>/100)
 command! -nargs=1 DotfilesTab tabnew | exe 'tcd ~/.dotfiles/'.<q-args>
-command! -nargs=1 Tab tabnew | exe 'tcd '.<q-args>
 
 autocmd InsertLeave,TextChanged,FocusLost * if &modifiable && !&readonly | silent! wall | endif
 autocmd BufWritePre * silent! lua vim.lsp.buf.format()
