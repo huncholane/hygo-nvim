@@ -26,6 +26,7 @@ return {
         require("null-ls.builtins.formatting.black"),
         require("null-ls.builtins.formatting.stylua"),
         require("null-ls.builtins.diagnostics.hadolint"),
+        require("null-ls.builtins.formatting.djhtml"),
       },
     })
   end,
