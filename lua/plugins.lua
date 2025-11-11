@@ -6,7 +6,7 @@ local plugins = {
   { "folke/tokyonight.nvim" },
   {
     "mason-org/mason.nvim",
-    opts = {}
+    opts = {},
   },
   { "nvim-tree/nvim-web-devicons" },
   {
@@ -20,13 +20,14 @@ local plugins = {
   "kristijanhusak/vim-dadbod-completion",
   "kristijanhusak/vim-dadbod-ui",
   "tpope/vim-dispatch",
-  { "lewis6991/gitsigns.nvim", opts = {} }
+  { "lewis6991/gitsigns.nvim", opts = {} },
+  { "windwp/nvim-ts-autotag",  opts = {} },
 }
 
 -- Load plugins from lua/plugins
 for _, file in ipairs(vim.fn.readdir(vim.fn.stdpath("config") .. "/lua/plugins")) do
   if file:sub(-4) == ".lua" then
-    local mod_str = 'plugins.' .. file:sub(1, -5)
+    local mod_str = "plugins." .. file:sub(1, -5)
     local ok, mod = pcall(require, mod_str)
     if ok then
       table.insert(plugins, mod)
