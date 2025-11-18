@@ -12,9 +12,6 @@ return {
 
     null_ls.setup({
       sources = {
-        require("null-ls.builtins.diagnostics.dotenv_linter").with({
-          filetypes = { "env" },
-        }),
         require("null-ls.builtins.formatting.prettier").with({
           filetypes = { "sh", "env" },
         }),
@@ -26,7 +23,7 @@ return {
         require("null-ls.builtins.formatting.black"),
         require("null-ls.builtins.formatting.stylua"),
         require("null-ls.builtins.diagnostics.hadolint"),
-        require("null-ls.builtins.formatting.djhtml"),
+        require("null-ls.builtins.formatting.djlint"),
       },
     })
   end,

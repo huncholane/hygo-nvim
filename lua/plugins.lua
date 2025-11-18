@@ -22,6 +22,7 @@ local plugins = {
   "tpope/vim-dispatch",
   { "lewis6991/gitsigns.nvim", opts = {} },
   { "windwp/nvim-ts-autotag",  opts = {} },
+  { "neovim/nvim-lspconfig" },
 }
 
 -- Load plugins from lua/plugins
