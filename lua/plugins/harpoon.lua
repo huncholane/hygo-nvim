@@ -16,7 +16,7 @@ return {
     end)
 
     for i=1, 9 do
-      vim.keymap.set("i", "<leader>"..i, function ()
+      vim.keymap.set("n", "<leader>f"..i, function ()
         harpoon:list():select(i)
         vim.print("selecting "..i)
       end, {desc="Harpoon "..i})
