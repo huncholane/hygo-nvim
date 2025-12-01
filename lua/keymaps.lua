@@ -17,6 +17,9 @@ easymap("n", "<leader>s", ":Scratch<cr>", "Scratch")
 easymap("n", "<leader>g", ":Telescope git_bcommits<cr>", "Buffer Commits")
 easymap("n", "<leader>d", ":Telescope git_status<cr>", "Git Diff")
 easymap("n", "<leader>.", ":Telescope all_files<cr>", "All Files")
+for i = 1, 9 do
+  easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
+end
 
 --quickfix
 easymap("n", "<leader>c", "", "Quick Fix")

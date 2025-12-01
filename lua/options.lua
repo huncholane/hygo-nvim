@@ -30,3 +30,5 @@ highlight Normal guibg=NONE ctermbg=NONE
 highlight EndOfBuffer guibg=NONE ctermbg=NONE
 "set statusline=[%{getcwd()}]\ %f:%{nvim_treesitter#statusline(1000)}
 ]])
+
+vim.g.maplocalleader = ","
