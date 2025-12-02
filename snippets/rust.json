@@ -1,0 +1,21 @@
+{
+  "Anyhow Result": {
+    "prefix": "anyhow_result",
+    "body": [
+      "anyhow::Result<${1:()}>"
+    ]
+  },
+  "Anyhow Macro": {
+    "prefix": "anyhow_macro",
+    "body": [
+      "anyhow::anyhow!(\"${1}\")"
+    ]
+  },
+  "Anyhow Error": {
+    "prefix": "anyhow_error",
+    "description": "anyhow::Error",
+    "body": [
+      "anyhow::Error"
+    ]
+  }
+}
