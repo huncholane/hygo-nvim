@@ -23,6 +23,7 @@ local plugins = {
   { "lewis6991/gitsigns.nvim", opts = {} },
   { "windwp/nvim-ts-autotag",  opts = {} },
   { "neovim/nvim-lspconfig" },
+  { "saecki/crates.nvim",      tag = "stable", opts = {} },
 }
 
 -- Load plugins from lua/plugins
