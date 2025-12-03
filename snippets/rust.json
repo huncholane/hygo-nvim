@@ -30,5 +30,57 @@
       ".${4:fetch_one}(pool)",
       ".await?;"
     ]
+  },
+  "Raw String String Literal": {
+    "prefix": [
+      "template-raw-string-literal",
+      "trsl",
+      "rsl"
+    ],
+    "description": "Simple way to make raw string literal",
+    "body": [
+      "r#\"${1:awesome text}\"#"
+    ]
+  },
+  "Once Cell Sync Lazy": {
+    "prefix": [
+      "template-once-cell-sync-lazy"
+    ],
+    "description": "Build a once_cell::sync::Lazy static value",
+    "body": [
+      "static ${1:NAME}: once_cell::sync::Lazy<${2:Type}> = once_cell::sync::Lazy::new(|| {",
+      "\t// ${1}",
+      "\t${3:function}",
+      "});"
+    ]
+  },
+  "Once Cell Sync Lazy Regex": {
+    "prefix": [
+      "template-once-cell-sync-lazy-regex"
+    ],
+    "body": [
+      "static ${1:NAME}_REGEX: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {",
+      "\tregex::Regex::new(r#\"${2:expression}\"#).unwrap()",
+      "});"
+    ]
+  },
+  "Tracing Span": {
+    "prefix": [
+      "template-new-span"
+    ],
+    "description": "Creates a span and enters it",
+    "body": [
+      "let span = tracing::span!(tracing::Level::${1:ERROR}, \"${2:name}\");",
+      "let _enter = span.enter();"
+    ]
+  },
+  "Current Span": {
+    "prefix": [
+      "template-current-span"
+    ],
+    "description": "Get the current span",
+    "body": [
+      "let span = tracing::Span::current();"
+    ]
   }
 }
