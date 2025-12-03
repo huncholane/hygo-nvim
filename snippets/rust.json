@@ -1,21 +1,34 @@
 {
   "Anyhow Result": {
-    "prefix": "anyhow_result",
+    "prefix": "template-anyhow_result",
     "body": [
       "anyhow::Result<${1:()}>"
     ]
   },
   "Anyhow Macro": {
-    "prefix": "anyhow_macro",
+    "prefix": "template-anyhow_macro",
     "body": [
       "anyhow::anyhow!(\"${1}\")"
     ]
   },
   "Anyhow Error": {
-    "prefix": "anyhow_error",
+    "prefix": "template-anyhow_error",
     "description": "anyhow::Error",
     "body": [
       "anyhow::Error"
+    ]
+  },
+  "Query As Statement": {
+    "prefix": "template-queryas",
+    "description": "Template for sqlx QueryAs statement",
+    "body": [
+      "let ${1:row} = sqlx::query_as::<_, ${2:TheStruct}>(",
+      "r#\"",
+      "${3:statement}",
+      "\"#,",
+      ")",
+      ".${4:fetch_one}(pool)",
+      ".await?;"
     ]
   }
 }
