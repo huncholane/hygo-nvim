@@ -59,7 +59,7 @@
       "template-once-cell-sync-lazy-regex"
     ],
     "body": [
-      "static ${1:NAME}_REGEX: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {",
+      "pub static ${1:NAME}_REGEX: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {",
       "\tregex::Regex::new(r#\"${2:expression}\"#).unwrap()",
       "});"
     ]
