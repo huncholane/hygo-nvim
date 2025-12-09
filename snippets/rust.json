@@ -64,6 +64,16 @@
       "});"
     ]
   },
+  "Once Cell Sync Lazy Selector": {
+    "prefix": [
+      "template-once-cell-sync-lazy-selector"
+    ],
+    "body": [
+      "static ${1:NAME}_SELECTOR: once_cell::sync::Lazy<Selector> = once_cell::sync::Lazy::new(|| {",
+      "\tSelector::parse(\"${2:selector}\").unwrap()",
+      "});"
+    ]
+  },
   "Tracing Span": {
     "prefix": [
       "template-new-span"
