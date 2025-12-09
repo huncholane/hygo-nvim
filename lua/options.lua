@@ -32,3 +32,9 @@ highlight EndOfBuffer guibg=NONE ctermbg=NONE
 ]])
 
 vim.g.maplocalleader = ","
+vim.opt.scrolloff = 10
+vim.diagnostic.config({
+  virtual_text = {
+    severity = vim.diagnostic.severity.ERROR,
+  },
+})

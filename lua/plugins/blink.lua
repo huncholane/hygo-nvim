@@ -54,6 +54,13 @@ return {
         sql = { "dadbod", "buffer" },
       },
       providers = {
+        path = {
+          opts = {
+            get_cwd = function(_)
+              return vim.fn.getcwd()
+            end,
+          },
+      },
         dadbod = { module = "vim_dadbod_completion.blink" },
       },
     },

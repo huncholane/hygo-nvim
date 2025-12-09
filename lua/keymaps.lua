@@ -17,6 +17,7 @@ easymap("n", "<leader>s", ":Scratch<cr>", "Scratch")
 easymap("n", "<leader>g", ":Telescope git_bcommits<cr>", "Buffer Commits")
 easymap("n", "<leader>d", ":Telescope git_status<cr>", "Git Diff")
 easymap("n", "<leader>.", ":Telescope all_files<cr>", "All Files")
+easymap("n", "<leader>d", ":Telescope diagnostics<cr>", "Diagnostics")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
@@ -61,13 +62,8 @@ easymap("n", "g,", "m'A,<esc>`'", "Append Comma")
 easymap("n", "gl", "", "LSP")
 easymap("n", "glt", ":ToggleDiagnostics<cr>", "Toggle")
 
----quickfix
-easymap("n", "gq", "", "Quickfix")
-easymap("n", "gql", vim.diagnostic.setqflist, "LSP")
-easymap("n", "gqn", vim.diagnostic.goto_next, "Next Diagnostic")
-easymap("n", "gqp", vim.diagnostic.goto_prev, "Prev Diagnostic")
-
 --extras others
 easymap({ "i", "n" }, "<C-s>", "<cmd>w<cr>", "Save")
 easymap({ "i", "n" }, "<C-p>", vim.diagnostic.open_float, "Open Diagnostic Float")
 easymap("n", ";", "A;", "Add ; to the end")
+easymap("n", ",", "A,", "Add , to the end")
