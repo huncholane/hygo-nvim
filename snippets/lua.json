@@ -1,0 +1,14 @@
+{
+  "Big Comment": {
+    "prefix": [
+      "bc",
+      "big_comment"
+    ],
+    "description": "Makes a big comment for nice separation in the same file",
+    "body": [
+      "------------------------------------------------------------",
+      "-- ${1:Very Cool Comment}",
+      "------------------------------------------------------------"
+    ]
+  }
+}
