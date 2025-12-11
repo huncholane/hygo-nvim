@@ -1,0 +1,92 @@
+{
+    "Ansi Red": {
+        "prefix": [
+            "red"
+        ],
+        "description": "Makes red colored ansi text",
+        "body": [
+            "\\033[31m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Green": {
+        "prefix": [
+            "green"
+        ],
+        "description": "Makes green colored ansi text",
+        "body": [
+            "\\033[32m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Yellow": {
+        "prefix": [
+            "yellow"
+        ],
+        "description": "Makes yellow colored ansi text",
+        "body": [
+            "\\033[33m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Blue": {
+        "prefix": [
+            "blue"
+        ],
+        "description": "Makes blue colored ansi text",
+        "body": [
+            "\\033[34m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Magenta": {
+        "prefix": [
+            "magenta"
+        ],
+        "description": "Makes magenta colored ansi text",
+        "body": [
+            "\\033[35m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Cyan": {
+        "prefix": [
+            "cyan"
+        ],
+        "description": "Makes cyan colored ansi text",
+        "body": [
+            "\\033[36m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi White": {
+        "prefix": [
+            "white"
+        ],
+        "description": "Makes white colored ansi text",
+        "body": [
+            "\\033[37m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Black": {
+        "prefix": [
+            "black"
+        ],
+        "description": "Makes black colored ansi text",
+        "body": [
+            "\\033[30m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Bold Red": {
+        "prefix": [
+            "boldred"
+        ],
+        "description": "Makes bold red colored ansi text",
+        "body": [
+            "\\033[1;31m${1:text}\\033[0m"
+        ]
+    },
+    "Ansi Bold Green": {
+        "prefix": [
+            "boldgreen"
+        ],
+        "description": "Makes bold green colored ansi text",
+        "body": [
+            "\\033[1;32m${1:text}\\033[0m"
+        ]
+    }
+}

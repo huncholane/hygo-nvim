@@ -1,0 +1,19 @@
+{
+    "New Template": {
+        "prefix": [
+            "new-template"
+        ],
+        "description": "Get the current span",
+        "body": [
+            "\"${1:New Template}\": {",
+            "\t\"prefix\": [",
+            "\t\t\"${2:new-template}\"",
+            "\t],",
+            "\t\"description\": \"${3:description}\",",
+            "\t\"body\": [",
+            "\t\t\"${4:body}\"",
+            "\t]",
+            "}"
+        ]
+    }
+}

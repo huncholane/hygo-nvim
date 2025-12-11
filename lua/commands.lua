@@ -100,6 +100,10 @@ vim.api.nvim_create_user_command("BufClean", function()
   vim.notify("🧹 Deleted " .. deleted .. " hidden buffers (tabs kept intact)")
 end, { desc = "Delete hidden buffers but keep tab buffers intact" })
 
+------------------------------------------------------------
+-- LastFile
+------------------------------------------------------------
+
 local last_buf = nil
 vim.api.nvim_create_autocmd("BufLeave", {
   callback = function(args)
