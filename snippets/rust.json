@@ -1,195 +1,183 @@
 {
-    "Big Comment": {
-        "prefix": [
-            "bc",
-            "big_comment"
-        ],
-        "body": [
-            "// --------------------------------------------------------- //",
-            "// ${1:Big Comment}",
-            "// --------------------------------------------------------- //",
-            ""
-        ]
-    },
-    "Big Docstring Comment": {
-        "prefix": [
-            "bdc",
-            "big-docstring-comment"
-        ],
-        "body": [
-            "// --------------------------------------------------------- //",
-            "/// ${1:Big Comment}",
-            "// --------------------------------------------------------- //"
-        ]
-    },
-    "Anyhow Result": {
-        "prefix": [
-            "template-anyhow_result",
-            "tar"
-        ],
-        "body": [
-            "anyhow::Result<${1:()}>"
-        ]
-    },
-    "Anyhow Macro": {
-        "prefix": [
-            "template-anyhow_macro",
-            "tam"
-        ],
-        "body": [
-            "anyhow::anyhow!(\"${1}\")"
-        ]
-    },
-    "Anyhow Error": {
-        "prefix": [
-            "template-anyhow_error",
-            "tae"
-        ],
-        "description": "anyhow::Error",
-        "body": [
-            "anyhow::Error"
-        ]
-    },
-    "Anyhow With Context": {
-        "prefix": [
-            "wc",
-            "template-with-context",
-            "twc"
-        ],
-        "description": "Add .with_context(|| format!(\"\")?; to function call",
-        "body": [
-            ".with_context(|| format!(\"${1:message}\"))?;"
-        ]
-    },
-    "Tracing Instrument": {
-        "prefix": [
-            "template-tracing-instrument",
-            "tracing-instrument",
-            "tti"
-        ],
-        "description": "#[tracing::instrument(err, skip_all, fields())]",
-        "body": [
-            "#[tracing::instrument(name=\"${1:name}\", err, skip_all, fields(${2:fields}))]"
-        ]
-    },
-    "Query As Statement": {
-        "prefix": "template-queryas",
-        "description": "Template for sqlx QueryAs statement",
-        "body": [
-            "let ${1:row} = sqlx::query_as::<_, ${2:TheStruct}>(",
-            "r#\"",
-            "${3:statement}",
-            "\"#,",
-            ")",
-            ".${4:fetch_one}(pool)",
-            ".await?;"
-        ]
-    },
-    "Raw String String Literal": {
-        "prefix": [
-            "template-raw-string-literal",
-            "trsl",
-            "rsl"
-        ],
-        "description": "Simple way to make raw string literal",
-        "body": [
-            "r#\"${1:awesome text}\"#"
-        ]
-    },
-    "Once Cell Sync Lazy": {
-        "prefix": [
-            "template-once-cell-sync-lazy"
-        ],
-        "description": "Build a once_cell::sync::Lazy static value",
-        "body": [
-            "static ${1:NAME}: once_cell::sync::Lazy<${2:Type}> = once_cell::sync::Lazy::new(|| {",
-            "\t// ${1}",
-            "\t${3:function}",
-            "});"
-        ]
-    },
-    "Once Cell Sync Lazy Regex": {
-        "prefix": [
-            "template-once-cell-sync-lazy-regex",
-            "lazy-regex"
-        ],
-        "body": [
-            "${1:pub }static ${2:NAME}_REGEX: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {",
-            "\tregex::Regex::new(r#\"${3:expression}\"#).unwrap()",
-            "});"
-        ]
-    },
-    "Once Cell Sync Lazy Selector": {
-        "prefix": [
-            "template-once-cell-sync-lazy-selector"
-        ],
-        "body": [
-            "static ${1:NAME}_SELECTOR: once_cell::sync::Lazy<Selector> = once_cell::sync::Lazy::new(|| {",
-            "\tSelector::parse(\"${2:selector}\").unwrap()",
-            "});"
-        ]
-    },
-    "Tracing Span": {
-        "prefix": [
-            "template-new-span"
-        ],
-        "description": "Creates a span and enters it",
-        "body": [
-            "let span = tracing::span!(tracing::Level::${1:ERROR}, \"${2:name}\");",
-            "let _enter = span.enter();"
-        ]
-    },
-    "Current Span": {
-        "prefix": [
-            "template-current-span"
-        ],
-        "description": "Get the current span",
-        "body": [
-            "let span = tracing::Span::current();"
-        ]
-    },
-    "Impl Display": {
-        "prefix": [
-            "impl-display"
-        ],
-        "description": "Impl std::fmt::Display for a struct",
-        "body": [
-            "impl std::fmt::Display for ${1:struct} {",
-            "\tfn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
-            "\t\twrite!(f, \"{}\", ${2:self})",
-            "\t}",
-            "}"
-        ]
-    },
-    "Impl Display for Option Wrapper": {
-        "prefix": [
-            "impl-display-opt"
-        ],
-        "description": "Impl a display for an option wrapper",
-        "body": [
-            "impl std::fmt::Display for ${1:OptWrapper} {",
-            "\tfn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
-            "\t\tif let Some(val) = &self.0 {",
-            "\t\t\twrite!(f, \"{}\", val)",
-            "\t\t} else {",
-            "\t\t\twrite!(f, \"${2:None}\")",
-            "\t\t}",
-            "\t}",
-            "}"
-        ]
-    },
-    "Impl FromStr": {
-        "prefix": [
-            "impl-from-str"
-        ],
-        "description": "Impl std::str::FromStr for a struct",
-        "body": [
-            "impl std::str::FromStr for ${1:MyStruct} {",
-            "\ttype Err = anyhow::Error;",
-            "\tfn from_str(s: &str) -> Result<Self, Self::Err> {",
-            "\t\t${2:implementation}",
-            "\t}",
-            "}"
-        ]
-    }
+  "Big Comment": {
+    "prefix": [
+      "bc",
+      "big_comment"
+    ],
+    "body": [
+      "// ########################################################################## //",
+      "// ${comment}",
+      "// ########################################################################## //"
+    ]
+  },
+  "Anyhow Result": {
+    "prefix": [
+      "template-anyhow_result",
+      "tar"
+    ],
+    "body": [
+      "anyhow::Result<${1:()}>"
+    ]
+  },
+  "Anyhow Macro": {
+    "prefix": [
+      "template-anyhow_macro",
+      "tam"
+    ],
+    "body": [
+      "anyhow::anyhow!(\"${1}\")"
+    ]
+  },
+  "Anyhow Error": {
+    "prefix": [
+      "template-anyhow_error",
+      "tae"
+    ],
+    "description": "anyhow::Error",
+    "body": [
+      "anyhow::Error"
+    ]
+  },
+  "Anyhow With Context": {
+    "prefix": [
+      "wc",
+      "template-with-context",
+      "twc"
+    ],
+    "description": "Add .with_context(|| format!(\"\")?; to function call",
+    "body": [
+      "with_context(|| format!(\"${1:message}\"))?"
+    ]
+  },
+  "Tracing Instrument": {
+    "prefix": [
+      "template-tracing-instrument",
+      "tracing-instrument",
+      "tti"
+    ],
+    "description": "#[tracing::instrument(err, skip_all, fields())]",
+    "body": [
+      "#[tracing::instrument(name=\"${1:name}\", err, skip_all, fields(${2:fields}))]"
+    ]
+  },
+  "Query As Statement": {
+    "prefix": "template-queryas",
+    "description": "Template for sqlx QueryAs statement",
+    "body": [
+      "let ${1:row} = sqlx::query_as::<_, ${2:TheStruct}>(",
+      "r#\"",
+      "${3:statement}",
+      "\"#,",
+      ")",
+      ".${4:fetch_one}(pool)",
+      ".await?;"
+    ]
+  },
+  "Raw String String Literal": {
+    "prefix": [
+      "template-raw-string-literal",
+      "trsl",
+      "rsl"
+    ],
+    "description": "Simple way to make raw string literal",
+    "body": [
+      "r#\"${1:awesome text}\"#"
+    ]
+  },
+  "Once Cell Sync Lazy": {
+    "prefix": [
+      "template-once-cell-sync-lazy"
+    ],
+    "description": "Build a once_cell::sync::Lazy static value",
+    "body": [
+      "static ${1:NAME}: once_cell::sync::Lazy<${2:Type}> = once_cell::sync::Lazy::new(|| {",
+      "\t// ${1}",
+      "\t${3:function}",
+      "});"
+    ]
+  },
+  "Once Cell Sync Lazy Regex": {
+    "prefix": [
+      "template-once-cell-sync-lazy-regex",
+      "lazy-regex"
+    ],
+    "body": [
+      "${1:pub }static ${2:NAME}_REGEX: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {",
+      "\tregex::Regex::new(r#\"${3:expression}\"#).unwrap()",
+      "});"
+    ]
+  },
+  "Once Cell Sync Lazy Selector": {
+    "prefix": [
+      "template-once-cell-sync-lazy-selector"
+    ],
+    "body": [
+      "static ${1:NAME}_SELECTOR: once_cell::sync::Lazy<Selector> = once_cell::sync::Lazy::new(|| {",
+      "\tSelector::parse(\"${2:selector}\").unwrap()",
+      "});"
+    ]
+  },
+  "Tracing Span": {
+    "prefix": [
+      "template-new-span"
+    ],
+    "description": "Creates a span and enters it",
+    "body": [
+      "let span = tracing::span!(tracing::Level::${1:ERROR}, \"${2:name}\");",
+      "let _enter = span.enter();"
+    ]
+  },
+  "Current Span": {
+    "prefix": [
+      "template-current-span"
+    ],
+    "description": "Get the current span",
+    "body": [
+      "let span = tracing::Span::current();"
+    ]
+  },
+  "Impl Display": {
+    "prefix": [
+      "impl-display"
+    ],
+    "description": "Impl std::fmt::Display for a struct",
+    "body": [
+      "impl std::fmt::Display for ${1:struct} {",
+      "\tfn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
+      "\t\twrite!(f, \"{}\", ${2:self})",
+      "\t}",
+      "}"
+    ]
+  },
+  "Impl Display for Option Wrapper": {
+    "prefix": [
+      "impl-display-opt"
+    ],
+    "description": "Impl a display for an option wrapper",
+    "body": [
+      "impl std::fmt::Display for ${1:OptWrapper} {",
+      "\tfn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
+      "\t\tif let Some(val) = &self.0 {",
+      "\t\t\twrite!(f, \"{}\", val)",
+      "\t\t} else {",
+      "\t\t\twrite!(f, \"${2:None}\")",
+      "\t\t}",
+      "\t}",
+      "}"
+    ]
+  },
+  "Impl FromStr": {
+    "prefix": [
+      "impl-from-str"
+    ],
+    "description": "Impl std::str::FromStr for a struct",
+    "body": [
+      "impl std::str::FromStr for ${1:MyStruct} {",
+      "\ttype Err = anyhow::Error;",
+      "\tfn from_str(s: &str) -> Result<Self, Self::Err> {",
+      "\t\t${2:implementation}",
+      "\t}",
+      "}"
+    ]
+  }
 }

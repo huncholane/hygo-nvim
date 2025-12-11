@@ -1,7 +1,10 @@
 local function easymap(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { desc = desc })
 end
---leader
+
+-- ########################################################################## --
+-- -Leader
+-- ########################################################################## --
 easymap("n", "<leader>k", ":SafeBD<cr>", "Close Buffer")
 easymap("n", "<leader>b", ":LastFile<cr>", "Last File")
 easymap("n", "<leader>q", ":silent! wa! | silent! qa!<cr>", "Quit")
@@ -15,14 +18,20 @@ easymap("n", "<leader>,", ":Telescope current_folder<cr>", "Search Current Folde
 easymap("n", "<leader>m", ':exe "resize ".float2nr(&lines*0.8)<cr>', "80% Window")
 easymap("n", "<leader>s", ":Scratch<cr>", "Scratch")
 easymap("n", "<leader>g", ":Telescope git_bcommits<cr>", "Buffer Commits")
-easymap("n", "<leader>d", ":Telescope git_status<cr>", "Git Diff")
 easymap("n", "<leader>.", ":Telescope all_files<cr>", "All Files")
-easymap("n", "<leader>d", ":Telescope diagnostics<cr>", "Diagnostics")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
 
---quickfix
+-- ########################################################################## --
+-- -Diagnostics
+-- ########################################################################## --
+easymap("n", "<leader>da", ":Telescope diagnostics<cr>", "All Diagnostics")
+easymap("n", "<leader>de", ":Telescope diagnostics severity=error<cr>", "Error Diagnostics")
+
+-- ########################################################################## --
+-- -Quickfix
+-- ########################################################################## --
 easymap("n", "<leader>c", "", "Quick Fix")
 easymap("n", "<leader>cn", ":cnext<cr>", "Next")
 easymap("n", "<leader>cp", ":cprev<cr>", "Prev")
@@ -31,17 +40,23 @@ easymap("n", "<leader>cq", ":cclose<cr>", "Close")
 easymap("n", "<leader>co", ":copen<cr>", "Open")
 easymap("n", "<leader>cc", ":cexpr []<cr>", "Clear")
 
---telescope
+-- ########################################################################## --
+-- -Telescope
+-- ########################################################################## --
 easymap("n", "<leader>t", "", "Telescope")
 easymap("n", "<leader>ts", ":Telescope treesitter<cr>", "Treesitter")
 
---fold
+-- ########################################################################## --
+-- -Folding
+-- ########################################################################## --
 easymap("n", "<leader>z", "", "Fold")
 easymap("n", "<leader>zt", ":TreeSitterFold<cr>", "Treesitter")
 easymap("n", "<leader>zi", ":IndentFold<cr>", "Indent")
 easymap("n", "<leader>zs", ":SyntaxFold<cr>", "Syntax")
 
---windows
+-- ########################################################################## --
+-- -Windows
+-- ########################################################################## --
 easymap({ "i", "n" }, "<C-h>", "<C-w>h")
 easymap({ "i", "n" }, "<C-j>", "<C-w>j")
 easymap({ "i", "n" }, "<C-k>", "<C-w>k")
@@ -51,7 +66,9 @@ for i = 1, 9 do
 end
 easymap("n", "<leader>w0", ":Resize 100<cr>", "Resize 100%")
 
----gotos
+-- ########################################################################## --
+-- -Gotos
+-- ########################################################################## --
 easymap("n", "gd", vim.lsp.buf.definition, "Goto Definition")
 easymap({ "n", "v" }, "gy", '"+y', "System Clipboard Copy")
 easymap({ "n", "v" }, "gp", '"+p', "System Clipboard Paste")

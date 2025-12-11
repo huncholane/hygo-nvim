@@ -3,6 +3,9 @@ vim.api.nvim_create_user_command("ToggleDiagnostics", function(_)
   vim.diagnostic.enable(not diagnostics_enabled)
 end, { desc = "Toggles Diagnostics" })
 
+-- ########################################################################## --
+-- -Scratch
+-- ########################################################################## --
 vim.api.nvim_create_user_command("ScratchFromCurrent", function()
   -- create new scratch buffer
   vim.cmd("enew")
@@ -19,6 +22,9 @@ vim.api.nvim_create_user_command("ScratchFromCurrent", function()
   vim.notify("📄 Copied current buffer into a scratch buffer")
 end, { desc = "Copy current buffer contents into scratch" })
 
+-- ########################################################################## --
+-- -Filetypes
+-- ########################################################################## --
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = ".env*",
   callback = function(_)
@@ -27,6 +33,16 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*.tf",
+  callback = function(_)
+    vim.bo.filetype = "terraform"
+  end,
+})
+
+-- ########################################################################## --
+-- -Compiler
+-- ########################################################################## --
 vim.api.nvim_create_user_command("Comp", function(args)
   vim.cmd("comp " .. args.args)
   vim.g.compiler = args.args
@@ -34,13 +50,6 @@ end, {
   nargs = 1,
   complete = "compiler",
   desc = "Wrapper around compiler to make current compiler available to UI",
-})
-
-vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = "*.tf",
-  callback = function(_)
-    vim.bo.filetype = "terraform"
-  end,
 })
 
 local function get_make_completions()
@@ -68,6 +77,9 @@ end, {
   desc = "Run make commands with django compiler",
 })
 
+-- ########################################################################## --
+-- -Tabs
+-- ########################################################################## --
 vim.api.nvim_create_user_command("Tab", function(args)
   vim.cmd("tabnew")
   vim.cmd("tcd " .. args.args)
@@ -81,6 +93,11 @@ vim.api.nvim_create_user_command("TabRename", function(opts)
   vim.cmd.redrawtabline()
 end, { nargs = 1, complete = "file", desc = "Rename current tab" })
 
+-- ########################################################################## --
+-- -Buffers
+-- ########################################################################## --
+
+-- Clean buffers
 vim.api.nvim_create_user_command("BufClean", function()
   -- Collect all visible buffers from every tab/window
   local visible = {}
@@ -100,10 +117,6 @@ vim.api.nvim_create_user_command("BufClean", function()
   vim.notify("🧹 Deleted " .. deleted .. " hidden buffers (tabs kept intact)")
 end, { desc = "Delete hidden buffers but keep tab buffers intact" })
 
-------------------------------------------------------------
--- LastFile
-------------------------------------------------------------
-
 local last_buf = nil
 vim.api.nvim_create_autocmd("BufLeave", {
   callback = function(args)
@@ -121,6 +134,9 @@ vim.api.nvim_create_user_command("LastFile", function()
   end
 end, {})
 
+-- ########################################################################## --
+-- -Vimscript
+-- ########################################################################## --
 vim.cmd([[
 command! -nargs=+ SetMakePrg execute 'set makeprg='.substitute(<q-args>, ' ', '\\ ', 'g')
 command! ToggleClist if empty(filter(getwininfo(), 'v:val.quickfix')) | copen | else | cclose | endif
