@@ -3,7 +3,6 @@ return {
   "kawre/leetcode.nvim",
   dependencies = { "MunifTanjim/nui.nvim", "tree-sitter/tree-sitter-html", "folke/which-key.nvim" },
   config = function()
-    local leet = require("leetcode")
     require("leetcode").setup({
       lang = "rust",
       hooks = {
@@ -23,6 +22,7 @@ return {
         vim.keymap.set("n", "<leader>s", "<cmd>Leet submit<cr>", { desc = "Submit" })
         vim.keymap.set("n", "<leader>t", "<cmd>Leet test<cr>", { desc = "Test" })
         vim.keymap.set("n", "<leader>l", "<cmd>Leet list<cr>", { desc = "List" })
+        vim.keymap.set("n", "<leader>c", "<cmd>Leet console<cr>", { desc = "Console" })
       end,
     })
   end,
