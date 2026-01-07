@@ -108,6 +108,7 @@ vim.api.nvim_create_user_command("BufClean", function()
 
   local deleted = 0
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    ---@diagnostic disable-next-line
     if vim.api.nvim_buf_is_loaded(buf) and not visible[buf] and vim.api.nvim_buf_get_option(buf, "buflisted") then
       vim.api.nvim_buf_delete(buf, { force = true })
       deleted = deleted + 1
@@ -155,6 +156,12 @@ command! Killqfjobs for j in g:qfjobs | call jobstop(j[0]) | endfor | set g:qfjo
 command! Restartqfjobs for j in g:qfjobs | call jobstop(j[0]) | let j[0] = jobstart(j[1]) | endfor
 command! -nargs=1 Resize silent! exe 'resize '.(&lines*<args>/100)
 command! -nargs=1 DotfilesTab tabnew | exe 'tcd ~/.dotfiles/'.<q-args>
+
+augroup AutoHighlighting
+    au!
+    autocmd CmdlineEnter /,\? set hlsearch
+    autocmd CmdlineLeave /,\? set nohlsearch
+augroup END
 
 autocmd InsertLeave,TextChanged,FocusLost * if &modifiable && !&readonly | silent! wall | endif
 autocmd BufWritePre * silent! lua vim.lsp.buf.format()

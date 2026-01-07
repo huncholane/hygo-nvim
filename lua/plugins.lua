@@ -9,13 +9,7 @@ local plugins = {
     opts = {},
   },
   { "nvim-tree/nvim-web-devicons" },
-  {
-    "kawre/leetcode.nvim",
-    dependencies = { "MunifTanjim/nui.nvim", "tree-sitter/tree-sitter-html" },
-    opts = {},
-  },
   { "windwp/nvim-autopairs",      opts = {} },
-  { "nvim-mini/mini.ai",          opts = {} },
   "tpope/vim-dadbod",
   "kristijanhusak/vim-dadbod-completion",
   "kristijanhusak/vim-dadbod-ui",

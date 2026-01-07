@@ -5,6 +5,6 @@ return {
   "rmagatti/auto-session",
   lazy = false,
   opts = {
-    suppressed_dirs = { "~/", "~/Projects", "~/Downloads" },
+    suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "~/Leet", "/tmp" },
   }
 }

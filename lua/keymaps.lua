@@ -24,6 +24,13 @@ for i = 1, 9 do
 end
 
 -- ########################################################################## --
+-- -Visual Mode Leaders
+-- ########################################################################## --
+easymap("v", "<leader>s", ":s/\\%V[A-Z]/_\\L&/g | nohl <cr>", "snake_case")
+easymap("v", "<leader>c", ":s/\\%V_\\(\\w\\)/\\U\\1/g | nohl <cr>", "camelCase")
+easymap("v", "<leader>n", ":g/^ *$/d | nohl <cr>", "Remove Blank Lines")
+
+-- ########################################################################## --
 -- -Diagnostics
 -- ########################################################################## --
 easymap("n", "<leader>da", ":Telescope diagnostics<cr>", "All Diagnostics")
@@ -78,6 +85,11 @@ easymap("n", "g;", "m'A;<esc>`'", "Append Colon")
 easymap("n", "g,", "m'A,<esc>`'", "Append Comma")
 easymap("n", "gl", "", "LSP")
 easymap("n", "glt", ":ToggleDiagnostics<cr>", "Toggle")
+
+-- ########################################################################## --
+-- Surroundings
+-- ########################################################################## --
+vim.keymap.set({ "x", "o" }, "ae", ":<C-u>normal! ggVG<CR>", { desc = "around entire buffer" })
 
 --extras others
 easymap({ "i", "n" }, "<C-s>", "<cmd>w<cr>", "Save")

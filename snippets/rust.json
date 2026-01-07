@@ -84,6 +84,19 @@
       "r#\"${1:awesome text}\"#"
     ]
   },
+  "Raw String String Literal Multiline": {
+    "prefix": [
+      "template-raw-string-literal-multiline",
+      "trsl-multiline",
+      "rsl-multiline"
+    ],
+    "description": "Simple way to make raw string literal",
+    "body": [
+      "r#\"",
+      "${1:far left text}",
+      "\"#"
+    ]
+  },
   "Once Cell Sync Lazy": {
     "prefix": [
       "template-once-cell-sync-lazy"
@@ -177,6 +190,49 @@
       "\tfn from_str(s: &str) -> Result<Self, Self::Err> {",
       "\t\t${2:implementation}",
       "\t}",
+      "}"
+    ]
+  },
+  "Impl Serialize": {
+    "prefix": [
+      "impl-serialize"
+    ],
+    "description": "scaffold for implementing serde serialize",
+    "body": [
+      "impl serde::Serialize for ${1:MyStruct} {",
+      "    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>",
+      "    where",
+      "        S: serde::Serializer,",
+      "    {",
+      "        let mut value = serde_json::json!({",
+      "        ${2:json values}",
+      "        });",
+      "        if let Some(obj) = value.as_object_mut() {",
+      "            obj.retain(|_, v| !v.is_null())",
+      "        }",
+      "        value.serialize(serializer)",
+      "    }",
+      "}"
+    ]
+  },
+  "Impl Tabled": {
+    "prefix": [
+      "impl-tabled"
+    ],
+    "description": "Scaffold for implementing tabled",
+    "body": [
+      "impl tabled::Tabled for ${1:MyStruct} {",
+      "    const LENGTH: usize = ${2:100};",
+      "    fn fields(&self) -> Vec<std::borrow::Cow<'_, str>> {",
+      "        into_vec![",
+      "        ${3:fields}",
+      "        ]",
+      "    }",
+      "    fn headers() -> Vec<std::borrow::Cow<'static, str>> {",
+      "        into_vec![",
+      "        ${4:titles}",
+      "        ]",
+      "    }",
       "}"
     ]
   }
