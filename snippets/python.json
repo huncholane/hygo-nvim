@@ -21,5 +21,14 @@
       "",
       "        return response"
     ]
+  },
+  "IgnoreAttributeAccessIssue": {
+    "prefix": [
+      "pyright-ignore-AttributesAccessIssue"
+    ],
+    "description": "Ignore comment for AttributeAccessIssue",
+    "body": [
+      "# pyright: ignore[reportAttributeAccessIssue]"
+    ]
   }
 }

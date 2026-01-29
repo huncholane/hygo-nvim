@@ -22,6 +22,17 @@ vim.api.nvim_create_user_command("ScratchFromCurrent", function()
   vim.notify("📄 Copied current buffer into a scratch buffer")
 end, { desc = "Copy current buffer contents into scratch" })
 
+
+-- In your main config (init.lua)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "javascript",
+  callback = function()
+    vim.bo.shiftwidth = 2
+    vim.bo.tabstop = 2
+    vim.bo.softtabstop = 2
+    vim.bo.expandtab = true
+  end,
+})
 -- ########################################################################## --
 -- -Filetypes
 -- ########################################################################## --
