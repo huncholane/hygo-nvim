@@ -1,9 +1,9 @@
 {
-  "LuaSnip": { "branch": "master", "commit": "3732756842a2f7e0e76a7b0487e9692072857277" },
   "auto-session": { "branch": "main", "commit": "292492ab7af4bd8b9e37e28508bc8ce995722fd5" },
   "blink.cmp": { "branch": "main", "commit": "40380e711b616a28affb0f4086a2f7de2f2a556b" },
   "bruno.nvim": { "branch": "main", "commit": "114155856d1ff76ad766efbb66fb270f20006c32" },
   "crates.nvim": { "branch": "main", "commit": "afcd1cc3eeceb5783676fc8464389b9216a29d05" },
+  "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },
   "friendly-snippets": { "branch": "main", "commit": "572f5660cf05f8cd8834e096d7b4c921ba18e175" },
   "gitsigns.nvim": { "branch": "main", "commit": "20ad4419564d6e22b189f6738116b38871082332" },
   "grug-far.nvim": { "branch": "main", "commit": "b58b2d65863f4ebad88b10a1ddd519e5380466e0" },
@@ -17,7 +17,6 @@
   "markdown-preview.nvim": { "branch": "master", "commit": "a923f5fc5ba36a3b17e289dc35dc17f66d0548ee" },
   "mason.nvim": { "branch": "main", "commit": "ad7146aa61dcaeb54fa900144d768f040090bff0" },
   "mini.ai": { "branch": "main", "commit": "0d3c9cf22e37b86b7a0dfbe7ef129ee7a5f4f93c" },
-  "nlsp-settings.nvim": { "branch": "main", "commit": "085f8249e7e506dfb5983b46608aa355072636bb" },
   "none-ls-extras.nvim": { "branch": "main", "commit": "70659cc3d38151424298ab46b0f67f2251cef231" },
   "none-ls.nvim": { "branch": "main", "commit": "550197530c12b4838d685cf4e0d5eb4cca8d52c7" },
   "nui.nvim": { "branch": "main", "commit": "de740991c12411b663994b2860f1a4fd0937c130" },
