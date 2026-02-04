@@ -17,7 +17,6 @@ easymap("n", "<leader>/", ":Telescope live_grep<cr>", "Live Grep")
 easymap("n", "<leader>,", ":Telescope current_folder<cr>", "Search Current Folder")
 easymap("n", "<leader>m", ':exe "resize ".float2nr(&lines*0.8)<cr>', "80% Window")
 easymap("n", "<leader>s", ":Scratch<cr>", "Scratch")
-easymap("n", "<leader>g", ":Telescope git_bcommits<cr>", "Buffer Commits")
 easymap("n", "<leader>.", ":Telescope all_files<cr>", "All Files")
 easymap("n", "<leader>i", function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ 0 }), { 0 })
@@ -25,6 +24,15 @@ end, "Toggle Inlay Hints")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
+
+-- ########################################################################## --
+-- Git
+-- ########################################################################## --
+easymap("n", "<leader>gh", ":Gitsigns preview_hunk<cr>", "Preview Hunk")
+easymap("n", "<leader>gb", ":Telescope git_bcommits<cr>", "Buffer Commits")
+easymap("n", "<leader>gf", ":Telescope changed_files<cr>", "Changed Files")
+easymap("n", "]h", ":Gitsigns next_hunk<cr>", "Next Hunk")
+easymap("n", "[h", ":Gitsigns prev_hunk<cr>", "Prev Hunk")
 
 -- ########################################################################## --
 -- -Visual Mode Leaders
@@ -88,13 +96,41 @@ easymap("n", "g;", "m'A;<esc>`'", "Append Colon")
 easymap("n", "g,", "m'A,<esc>`'", "Append Comma")
 easymap("n", "gl", "", "LSP")
 easymap("n", "glt", ":ToggleDiagnostics<cr>", "Toggle")
+vim.keymap.set("n", "]e", function()
+  vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR, open = false })
+  local ok, _ = pcall(vim.cmd.cnext)
+  if not ok then
+    pcall(vim.cmd.cfirst)
+  end
+end, { desc = "Next Error" })
+vim.keymap.set("n", "[e", function()
+  vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR, open = false })
+  local ok, _ = pcall(vim.cmd.cprev)
+  if not ok then
+    pcall(vim.cmd.clast)
+  end
+end)
+vim.keymap.set("n", "]d", function()
+  vim.diagnostic.setqflist({ open = false })
+  local ok, _ = pcall(vim.cmd.cnext)
+  if not ok then
+    pcall(vim.cmd.cfirst)
+  end
+end, { desc = "Next Error" })
+vim.keymap.set("n", "[d", function()
+  vim.diagnostic.setqflist({ open = false })
+  local ok, _ = pcall(vim.cmd.cprev)
+  if not ok then
+    pcall(vim.cmd.clast)
+  end
+end)
 
 -- ########################################################################## --
 -- Surroundings
 -- ########################################################################## --
 vim.keymap.set({ "x", "o" }, "ae", ":<C-u>normal! ggVG<CR>", { desc = "around entire buffer" })
 
---extras others
+-- Extras
 easymap({ "i", "n" }, "<C-s>", "<cmd>w<cr>", "Save")
 easymap({ "i", "n" }, "<C-p>", vim.diagnostic.open_float, "Open Diagnostic Float")
 easymap("n", ";", "A;", "Add ; to the end")

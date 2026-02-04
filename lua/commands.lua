@@ -3,6 +3,19 @@ vim.api.nvim_create_user_command("ToggleDiagnostics", function(_)
   vim.diagnostic.enable(not diagnostics_enabled)
 end, { desc = "Toggles Diagnostics" })
 
+-- Open DBUI in a new tab.
+vim.api.nvim_create_user_command("DBUITab", function(_)
+  -- Make directory in /tmp/sql so the directory is called sql
+  if vim.fn.isdirectory("/tmp/sql") == 0 then
+    vim.fn.mkdir("/tmp/sql")
+  end
+
+  -- Open new tab to /tmp/sql and load DBUI
+  vim.cmd("tabnew")
+  vim.cmd("tcd /tmp/sql")
+  vim.cmd("DBUI")
+end, { desc = "Open new tab in /tmp/sql with DBUI" })
+
 -- ########################################################################## --
 -- -Scratch
 -- ########################################################################## --
@@ -21,7 +34,6 @@ vim.api.nvim_create_user_command("ScratchFromCurrent", function()
   end
   vim.notify("📄 Copied current buffer into a scratch buffer")
 end, { desc = "Copy current buffer contents into scratch" })
-
 
 -- In your main config (init.lua)
 vim.api.nvim_create_autocmd("FileType", {
