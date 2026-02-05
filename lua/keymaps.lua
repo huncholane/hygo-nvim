@@ -52,6 +52,25 @@ easymap("n", "<leader>gd", function()
 end, "Toggle Diff")
 easymap("n", "]h", ":Gitsigns next_hunk<cr>", "Next Hunk")
 easymap("n", "[h", ":Gitsigns prev_hunk<cr>", "Prev Hunk")
+easymap("n", "]H", function()
+  vim.cmd("Gitsigns setqflist all")
+  vim.defer_fn(function()
+    local ok, _ = pcall(vim.cmd.cnext)
+    if not ok then
+      pcall(vim.cmd.cfirst)
+    end
+    pcall(vim.cmd.cclose)
+  end, 50)
+end, "Next Hunk Global")
+easymap("n", "[H", function()
+  local ok, _ = vim.cmd("Gitsigns setqflist all")
+  vim.defer_fn(function()
+    if not ok then
+      pcall(vim.cmd.clast)
+    end
+    pcall(vim.cmd.cclose)
+  end, 50)
+end)
 
 -- Close the gitsigns buffer when entering a non-related buffer
 vim.api.nvim_create_autocmd("BufEnter", {
