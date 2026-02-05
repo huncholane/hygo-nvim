@@ -28,11 +28,60 @@ end
 -- ########################################################################## --
 -- Git
 -- ########################################################################## --
+local function find_gitsigns_bufs()
+  local bufs = {}
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name:match("^gitsigns:///.*") then
+      table.insert(bufs, buf)
+    end
+  end
+  return bufs
+end
 easymap("n", "<leader>gh", ":Gitsigns preview_hunk<cr>", "Preview Hunk")
 easymap("n", "<leader>gb", ":Telescope git_bcommits<cr>", "Buffer Commits")
 easymap("n", "<leader>gf", ":Telescope changed_files<cr>", "Changed Files")
+easymap("n", "<leader>gd", function()
+  local _, gitsign_buf = next(find_gitsigns_bufs())
+  if gitsign_buf == nil then
+    vim.cmd(":Gitsigns diffthis")
+  else
+    vim.api.nvim_buf_delete(gitsign_buf, {})
+  end
+end, "Toggle Diff")
 easymap("n", "]h", ":Gitsigns next_hunk<cr>", "Next Hunk")
 easymap("n", "[h", ":Gitsigns prev_hunk<cr>", "Prev Hunk")
+
+-- Close the gitsigns buffer when entering a non-related buffer
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    local _, gitsign_buf = next(find_gitsigns_bufs())
+
+    -- Ignore if there is no gitsigns buffer
+    if gitsign_buf == nil then
+      return
+    end
+
+    -- Gather info on buffers
+    local gitsign_name = vim.api.nvim_buf_get_name(gitsign_buf)
+    local current_name = vim.api.nvim_buf_get_name(0)
+    local diffed_name = gitsign_name:match(".*:(.*)$")
+
+    -- Keep gitsigns buffer alive if current buffer is gitsigns, current file, a terminal, or allowed filetype
+    local allowed_filetypes = { TelescopePrompt = 1 }
+    if
+        current_name:find(diffed_name .. "$")
+        or allowed_filetypes[vim.bo.filetype] == nil
+        or vim.bo.terminal_job_id ~= nil
+    then
+      return
+    end
+
+    -- Close the gitsign buffer
+    vim.api.nvim_buf_delete(gitsign_buf, {})
+  end,
+})
 
 -- ########################################################################## --
 -- -Visual Mode Leaders
