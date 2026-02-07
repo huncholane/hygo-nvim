@@ -105,7 +105,7 @@ M.setup = function()
   vim.keymap.set("n", "<leader>gg", ":Git<cr>", { desc = "Fugitive" })
   vim.keymap.set("n", "<leader>gs", ":Telescope git_status<cr>", { desc = "Git Status" })
   vim.keymap.set("n", "<leader>gl", M.toggle_last_gvdiff, { desc = "Toggle Diff" })
-  vim.keymap.set("n", "<leader>gp", ":Telescope previous_commit<cr>", { desc = "Previous Commit Files" })
+  vim.keymap.set("n", "<leader>gp", ":Telescope git-extensions previous_commit<cr>", { desc = "Previous Commit Files" })
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
