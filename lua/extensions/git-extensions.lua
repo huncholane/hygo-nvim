@@ -73,7 +73,31 @@ M.clear_current_tab_diff_buf = function()
   end
 end
 
---- Sets up the extension. Make sure to set up lewis6991/gitsigns.nvim and tpope/vim-fugitive first.
+--- Telescope files changed in the previous commit.
+M.previous_commit_changed_files = function()
+  local pickers = require("telescope.pickers")
+  local finders = require("telescope.finders")
+  local previewers = require("telescope.previewers")
+  local conf = require("telescope.config").values
+
+  local files = vim.fn.systemlist("git diff --name-only HEAD~1")
+
+  pickers
+      .new({}, {
+        prompt_title = "Last Commit Changes",
+        finder = finders.new_table({ results = files }),
+        sorter = conf.file_sorter({}),
+        previewer = previewers.new_termopen_previewer({
+          get_command = function(entry)
+            return { "git", "diff", "HEAD~1", "--", entry.value }
+          end,
+        }),
+      })
+      :find()
+end
+
+--- Sets up the extension. Make sure to set up `lewis6991/gitsigns.nvim`
+--- and `tpope/vim-fugitive` first.
 M.setup = function()
   -- Leader maps
   vim.keymap.set("n", "<leader>gh", ":Gitsigns preview_hunk<cr>", { desc = "Preview Hunk" })
@@ -81,6 +105,7 @@ M.setup = function()
   vim.keymap.set("n", "<leader>gg", ":Git<cr>", { desc = "Fugitive" })
   vim.keymap.set("n", "<leader>gs", ":Telescope git_status<cr>", { desc = "Git Status" })
   vim.keymap.set("n", "<leader>gl", M.toggle_last_gvdiff, { desc = "Toggle Diff" })
+  vim.keymap.set("n", "<leader>gp", ":Telescope previous_commit<cr>", { desc = "Previous Commit Files" })
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
