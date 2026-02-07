@@ -31,9 +31,22 @@ git.status = function(opts)
     if vim.F.if_nil(opts.expand_dir, true) then
       table.insert(args, #args - 1, "-uall")
     end
-    local git_cmd = git_command(args, opts)
     opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
-    return finders.new_oneshot_job(git_cmd, opts)
+    local output = utils.get_os_command_output(
+      git_command({ "--no-pager", "diff", "--name-status", "HEAD~1", "HEAD", "--", "." }, opts),
+      opts.cwd
+    )
+
+    return finders.new_table({
+      results = output,
+      entry_maker = function(line)
+        local status, file = line:match("^(%a)%s+(.*)")
+        if not status then
+          return nil
+        end
+        return make_entry.gen_from_git_status(opts)(" " .. status .. " " .. file)
+      end,
+    })
   end
 
   local initial_finder = gen_new_finder()
