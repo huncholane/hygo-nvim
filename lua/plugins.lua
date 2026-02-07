@@ -14,7 +14,6 @@ local plugins = {
   "kristijanhusak/vim-dadbod-completion",
   "kristijanhusak/vim-dadbod-ui",
   "tpope/vim-dispatch",
-  { "lewis6991/gitsigns.nvim",           opts = {} },
   { "windwp/nvim-ts-autotag",            opts = {} },
   { "neovim/nvim-lspconfig" },
   { "saecki/crates.nvim",                tag = "stable", opts = {} },
