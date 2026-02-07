@@ -58,7 +58,14 @@ git.status = function(opts)
       .new(opts, {
         prompt_title = "Git Status",
         finder = initial_finder,
-        previewer = previewers.git_file_diff.new(opts),
+        previewer = previewers.new_buffer_previewer({
+          title = "HEAD~1 HEAD Changes",
+          define_preview = function(self, entry, status)
+            local file = entry.value or entry.filename
+            local output = vim.fn.systemlist({ "git", "diff", "HEAD~1", "HEAD", "--", file })
+            vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, output)
+          end,
+        }),
         sorter = conf.file_sorter(opts),
         on_complete = {
           function(self)
