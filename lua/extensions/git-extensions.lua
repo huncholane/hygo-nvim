@@ -146,7 +146,6 @@ M.setup = function(opts)
   -- Autocmds
   vim.api.nvim_create_autocmd({ "BufEnter", "WinClosed" }, {
     callback = function()
-      print("window closed!!!!!")
       M.clear_diff_bufs()
     end,
   })
