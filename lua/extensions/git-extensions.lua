@@ -1,7 +1,6 @@
 local M = {
-
-  --- Gvdiff buffers mapped by origin buffer.
-  diff_bufs = {},
+  --- Map original buffer to diff buffer
+  diff_buf_map = {},
 
   --- Filetypes to allow diff to stay open on BufEnter events.
   allowed_filetypes = {},
@@ -34,16 +33,18 @@ end
 --- Toggle gvdiff from current status to last time the file was changed.
 --- Example: The file was last changed 5 commits ago.
 M.toggle_last_gvdiff = function()
-  local original_buffer = vim.api.nvim_get_current_buf()
-  if M.diff_bufs[original_buffer] == nil then
+  local original_buf = vim.api.nvim_get_current_buf()
+  if M.diff_buf_map[original_buf] == nil then
     local rev = M.current_file_last_change_commit_hash()
     vim.cmd(":Gvdiff " .. rev)
-    M.diff_bufs[original_buffer] = vim.api.nvim_get_current_buf()
-    vim.print(original_buffer .. " " .. vim.api.nvim_get_current_buf())
+    M.diff_buf_map[original_buf] = vim.api.nvim_get_current_buf()
     vim.cmd("wincmd l")
+    vim.defer_fn(function()
+      vim.cmd("diffupdate")
+    end, 50)
   else
-    vim.api.nvim_buf_delete(M.diff_bufs[original_buffer], {})
-    M.diff_bufs[original_buffer] = nil
+    vim.api.nvim_buf_delete(M.diff_buf_map[original_buf], {})
+    M.diff_buf_map[original_buf] = nil
   end
 end
 
@@ -70,43 +71,26 @@ M.prev_global_hunk = function()
   end, 50)
 end
 
+local function is_buf_visible(buf)
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == buf then
+      return true
+    end
+  end
+  return false
+end
+
 --- Clear diff buffer when changing buffers.
 --- Example: A gitdiff is open and I open a new file. I don't want to see the diff
 --- on the old file anymore.
-M.clear_current_tab_diff_buf = function()
-  local cur_buf = vim.api.nvim_get_current_buf()
-  local cur_name = vim.api.nvim_buf_get_name(cur_buf)
-  vim.print(cur_buf .. " " .. cur_name)
-  if M.diff_bufs[cur_buf] ~= nil then
-    return
+M.clear_diff_bufs = function()
+  local current_buf = vim.api.nvim_get_current_buf()
+  for o, buf in pairs(M.diff_buf_map) do
+    if (o ~= current_buf and buf ~= current_buf) or not is_buf_visible(buf) then
+      vim.api.nvim_buf_delete(buf, {})
+      M.diff_buf_map[o] = nil
+    end
   end
-  for original_buf, diff_buf in pairs(M.diff_bufs) do
-    vim.api.nvim_buf_delete(diff_buf, {})
-    M.diff_bufs[original_buf] = nil
-  end
-end
-
---- Telescope files changed in the previous commit.
-M.previous_commit_changed_files = function()
-  local pickers = require("telescope.pickers")
-  local finders = require("telescope.finders")
-  local previewers = require("telescope.previewers")
-  local conf = require("telescope.config").values
-
-  local files = vim.fn.systemlist("git diff --name-only HEAD~1")
-
-  pickers
-      .new({}, {
-        prompt_title = "Last Commit Changes",
-        finder = finders.new_table({ results = files }),
-        sorter = conf.file_sorter({}),
-        previewer = previewers.new_termopen_previewer({
-          get_command = function(entry)
-            return { "git", "diff", "HEAD~1", "--", entry.value }
-          end,
-        }),
-      })
-      :find()
 end
 
 --- Telescope git_bcommit with Gvdiff with settings.git_bcommit_diff_map
@@ -117,12 +101,16 @@ M.extended_bcommit_picker = function()
       local actions = require("telescope.actions")
       local action_state = require("telescope.actions.state")
       map("i", keymap, function(prompt_bufnr)
+        M.opening_diff_buf = true
         local entry = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd("Gvdiff " .. entry.value)
-        local diff_buff = vim.api.nvim_get_current_buf()
+        local diff_buf = vim.api.nvim_get_current_buf()
         vim.cmd("wincmd l")
-        M.diff_bufs[vim.api.nvim_get_current_buf()] = diff_buff
+        vim.defer_fn(function()
+          vim.cmd("diffupdate")
+        end, 50)
+        M.diff_buf_map[vim.api.nvim_get_current_buf()] = diff_buf
       end)
 
       return true
@@ -156,8 +144,11 @@ M.setup = function(opts)
   vim.keymap.set("n", "[H", M.prev_global_hunk, { desc = "Global Hunk" })
 
   -- Autocmds
-  vim.api.nvim_create_autocmd("BufEnter", {
-    callback = M.clear_current_tab_diff_buf,
+  vim.api.nvim_create_autocmd({ "BufEnter", "WinClosed" }, {
+    callback = function()
+      print("window closed!!!!!")
+      M.clear_diff_bufs()
+    end,
   })
 end
 
