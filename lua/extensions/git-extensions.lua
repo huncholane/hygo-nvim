@@ -5,6 +5,19 @@ local M = {
 
   --- Filetypes to allow diff to stay open on BufEnter events.
   allowed_filetypes = {},
+
+  --- Default settings
+  --- @class git-extensions.settings
+  defaults = {
+    git_bcommit_diff_map = "<C-d>",
+    leader = "<leader>g",
+  },
+
+  --- Final settings
+  --- @type git-extensions.settings?
+  settings = nil,
+
+  open_previous_commits = ":Telescope git-extensions previous_commit<cr>",
 }
 --- Finds the commit for last time the current file was changed.
 M.current_file_last_change_commit_hash = function()
@@ -96,16 +109,45 @@ M.previous_commit_changed_files = function()
       :find()
 end
 
+--- Telescope git_bcommit with Gvdiff with settings.git_bcommit_diff_map
+M.extended_bcommit_picker = function()
+  require("telescope.builtin").git_bcommits({
+    attach_mappings = function(_, map)
+      local keymap = M.settings and M.settings.git_bcommit_diff_map or M.defaults.git_bcommit_diff_map
+      local actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+      map("i", keymap, function(prompt_bufnr)
+        local entry = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd("Gvdiff " .. entry.value)
+        local diff_buff = vim.api.nvim_get_current_buf()
+        vim.cmd("wincmd l")
+        M.diff_bufs[vim.api.nvim_get_current_buf()] = diff_buff
+      end)
+
+      return true
+    end,
+  })
+end
+
+--- Registers a key with the leader from settings.
+M.register_keymap = function(key, command, desc)
+  local leader = M.settings and M.settings.leader or M.defaults.leader
+  vim.keymap.set("n", leader .. key, command, { desc = desc })
+end
+
 --- Sets up the extension. Make sure to set up `lewis6991/gitsigns.nvim`
 --- and `tpope/vim-fugitive` first.
-M.setup = function()
+--- @param opts git-extensions.settings?
+M.setup = function(opts)
+  M.settings = opts
   -- Leader maps
-  vim.keymap.set("n", "<leader>gh", ":Gitsigns preview_hunk<cr>", { desc = "Preview Hunk" })
-  vim.keymap.set("n", "<leader>gb", ":Telescope git_bcommits<cr>", { desc = "Buffer Commits" })
-  vim.keymap.set("n", "<leader>gg", ":Git<cr>", { desc = "Fugitive" })
-  vim.keymap.set("n", "<leader>gs", ":Telescope git_status<cr>", { desc = "Git Status" })
-  vim.keymap.set("n", "<leader>gl", M.toggle_last_gvdiff, { desc = "Toggle Diff" })
-  vim.keymap.set("n", "<leader>gp", ":Telescope git-extensions previous_commit<cr>", { desc = "Previous Commit Files" })
+  M.register_keymap("h", ":Gitsigns preview_hunk<cr>", "Preview Hunk")
+  M.register_keymap("b", M.extended_bcommit_picker, "Buffer Commits")
+  M.register_keymap("g", ":Git<cr>", "Fugitive")
+  M.register_keymap("s", ":Telescope git_status<cr>", "Git Status")
+  M.register_keymap("l", M.toggle_last_gvdiff, "Toggle Diff")
+  M.register_keymap("p", M.open_previous_commits, "Previous Commit Files")
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
