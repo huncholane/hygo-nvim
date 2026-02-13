@@ -12,7 +12,6 @@ easymap("n", "<leader>;", "q:", "Elite Cmd")
 easymap("n", "<leader>f", ":Format<cr>", "Format")
 easymap("n", "<leader>h", ":nohl<cr>", "Remove Highlights")
 easymap("n", "<leader><Space>", ":Telescope find_files<cr>", "Files")
-easymap("n", "<leader>l", ":<C-p><cr>", "Last Command")
 easymap("n", "<leader>/", ":Telescope live_grep<cr>", "Live Grep")
 easymap("n", "<leader>,", ":Telescope current_folder<cr>", "Search Current Folder")
 easymap("n", "<leader>m", ':exe "resize ".float2nr(&lines*0.8)<cr>', "80% Window")
@@ -24,6 +23,13 @@ end, "Toggle Inlay Hints")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
+
+-- ########################################################################## --
+-- -Built in Lsp
+-- ########################################################################## --
+vim.keymap.set("n", "<leader>l", "", { desc = "LSP" })
+vim.keymap.set("n", "<leader>lr", ":LspRestart<cr>", { desc = "Restart" })
+vim.keymap.set("n", "<leader>lm", ":Mason<cr>", { desc = "Mason" })
 
 -- ########################################################################## --
 -- -Visual Mode Leaders
