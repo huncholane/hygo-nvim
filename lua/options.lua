@@ -4,6 +4,7 @@ for _, file in ipairs(vim.fn.readdir(vim.fn.stdpath("config") .. "/lsp")) do
     table.insert(lsplist, file:sub(1, -5))
   end
 end
+
 vim.lsp.enable(lsplist)
 
 vim.cmd([[

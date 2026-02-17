@@ -2,18 +2,16 @@ require("lazy-bootstrap")
 
 -- These plugins don't need individual files
 local plugins = {
+  { "ellisonleao/dotenv.nvim",      opts = {} },
   { "nvim-telescope/telescope.nvim" },
   { "folke/tokyonight.nvim" },
   {
     "mason-org/mason.nvim",
     opts = {},
   },
-  { "nvim-tree/nvim-web-devicons" },
-  { "windwp/nvim-autopairs",      opts = {} },
-  "tpope/vim-dadbod",
-  "kristijanhusak/vim-dadbod-completion",
-  "kristijanhusak/vim-dadbod-ui",
   "tpope/vim-dispatch",
+  { "nvim-tree/nvim-web-devicons" },
+  { "windwp/nvim-autopairs",             opts = {} },
   { "windwp/nvim-ts-autotag",            opts = {} },
   { "neovim/nvim-lspconfig" },
   { "saecki/crates.nvim",                tag = "stable", opts = {} },

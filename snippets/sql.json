@@ -1,0 +1,27 @@
+{
+  "Postgres Function": {
+    "prefix": [
+      "pf",
+      "postgres-function"
+    ],
+    "description": "Create a postgres function.",
+    "body": [
+      "CREATE OR REPLACE FUNCTION ${1:name}(${2:vars})",
+      "RETURNS ${3:return_type}",
+      "LANGUAGE plpgsql",
+      "AS \\$\\$",
+      "BEGIN",
+      "  ${4:logic}",
+      "END; \\$\\$;"
+    ]
+  },
+  "New Template": {
+    "prefix": [
+      "new-template"
+    ],
+    "description": "description",
+    "body": [
+      "body"
+    ]
+  }
+}

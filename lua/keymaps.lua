@@ -9,7 +9,7 @@ easymap("n", "<leader>k", ":SafeBD<cr>", "Close Buffer")
 easymap("n", "<leader>b", ":LastFile<cr>", "Last File")
 easymap("n", "<leader>q", ":silent! wa! | silent! qa!<cr>", "Quit")
 easymap("n", "<leader>;", "q:", "Elite Cmd")
-easymap("n", "<leader>f", ":Format<cr>", "Format")
+easymap("n", "<leader>f", ":Format<cr>", "Format");
 easymap("n", "<leader>h", ":nohl<cr>", "Remove Highlights")
 easymap("n", "<leader><Space>", ":Telescope find_files<cr>", "Files")
 easymap("n", "<leader>/", ":Telescope live_grep<cr>", "Live Grep")
@@ -146,5 +146,5 @@ vim.keymap.set({ "x", "o" }, "ae", ":<C-u>normal! ggVG<CR>", { desc = "around en
 -- Extras
 easymap({ "i", "n" }, "<C-s>", "<cmd>w<cr>", "Save")
 easymap({ "i", "n" }, "<C-p>", vim.diagnostic.open_float, "Open Diagnostic Float")
-easymap("n", ";", "A;", "Add ; to the end")
-easymap("n", ",", "A,", "Add , to the end")
+-- easymap("n", ";", "A;", "Add ; to the end")
+-- easymap("n", ",", "A,", "Add , to the end")

@@ -44,6 +44,7 @@ return {
     "rafamadriz/friendly-snippets",
     -- "tamago324/nlsp-settings.nvim",
     { "onsails/lspkind.nvim", config = lspkind_config },
+    "kristijanhusak/vim-dadbod-completion",
   },
   build = "cargo build --release",
   opts = {
@@ -51,7 +52,7 @@ return {
     sources = {
       default = { "lsp", "buffer", "snippets", "path" },
       per_filetype = {
-        sql = { "dadbod", "buffer" },
+        sql = { "dadbod", "buffer", "snippets" },
       },
       providers = {
         path = {
@@ -60,7 +61,7 @@ return {
               return vim.fn.getcwd()
             end,
           },
-      },
+        },
         dadbod = { module = "vim_dadbod_completion.blink" },
       },
     },
