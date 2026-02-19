@@ -136,6 +136,7 @@ M.setup = function(opts)
   M.register_keymap("s", ":Telescope git_status<cr>", "Git Status")
   M.register_keymap("l", M.toggle_last_gvdiff, "Toggle Diff")
   M.register_keymap("p", M.open_previous_commits, "Previous Commit Files")
+  M.register_keymap("g", ":G<cr>", "Fugitive")
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
