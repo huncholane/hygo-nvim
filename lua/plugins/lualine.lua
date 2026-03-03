@@ -2,7 +2,7 @@
 return {
   "nvim-lualine/lualine.nvim",
   event = "VeryLazy",
-  dependencies = { "nvim-tree/nvim-web-devicons" },
+  dependencies = { "nvim-tree/nvim-web-devicons", "SmiteshP/nvim-navic" },
   opts = {
     options = {
       theme = "gruvbox",
@@ -14,10 +14,14 @@ return {
         {
           function()
             local handle = io.popen("git rev-parse --show-toplevel 2>/dev/null")
-            if not handle then return "" end
+            if not handle then
+              return ""
+            end
             local result = handle:read("*a")
             handle:close()
-            if result == "" then return "" end
+            if result == "" then
+              return ""
+            end
             local name = vim.fn.fnamemodify(result:gsub("\n", ""), ":t")
             return " " .. name
           end,
@@ -35,13 +39,16 @@ return {
           color = { fg = "#7aa2f7", gui = "bold" },
         },
         { "filename", path = 1 },
+        { "navic",    color_correction = "static" },
       },
       lualine_x = {
         "encoding",
         "fileformat",
-        { function()
-          return "⚙️ " .. vim.g.compiler
-        end },
+        {
+          function()
+            return "⚙️ " .. vim.g.compiler
+          end,
+        },
         "filetype",
       },
       lualine_y = { "progress" },

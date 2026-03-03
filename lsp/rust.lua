@@ -118,7 +118,7 @@ return {
   },
   settings = {
     ["rust-analyzer"] = {
-      cargo = { features =  "all"  },
+      cargo = { features = "all" },
       diagnostics = {
         disabled = { "inactive-code" },
       },
@@ -161,7 +161,12 @@ return {
       end
     end
   end,
-  on_attach = function(_, bufnr)
+  on_attach = function(client, bufnr)
+    local navic = require("nvim-navic")
+    if client.server_capabilities.documentSymbolProvider then
+      navic.attach(client, bufnr)
+    end
+
     vim.api.nvim_buf_create_user_command(bufnr, "LspCargoReload", function()
       reload_workspace(bufnr)
     end, { desc = "Reload current cargo workspace" })
