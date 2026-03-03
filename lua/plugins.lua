@@ -5,6 +5,7 @@ local plugins = {
   { "ellisonleao/dotenv.nvim",      opts = {} },
   { "nvim-telescope/telescope.nvim" },
   { "folke/tokyonight.nvim" },
+  { "mg979/vim-visual-multi" },
   {
     "mason-org/mason.nvim",
     opts = {},
