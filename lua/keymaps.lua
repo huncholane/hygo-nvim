@@ -46,17 +46,6 @@ easymap("n", "<leader>da", ":Telescope diagnostics<cr>", "All Diagnostics")
 easymap("n", "<leader>de", ":Telescope diagnostics severity=error<cr>", "Error Diagnostics")
 
 -- ########################################################################## --
--- -Quickfix
--- ########################################################################## --
-easymap("n", "<leader>c", "", "Quick Fix")
-easymap("n", "<leader>cn", ":cnext<cr>", "Next")
-easymap("n", "<leader>cp", ":cprev<cr>", "Prev")
-easymap("n", "<leader>ct", ":ToggleClist<cr>", "Toggle")
-easymap("n", "<leader>cq", ":cclose<cr>", "Close")
-easymap("n", "<leader>co", ":copen<cr>", "Open")
-easymap("n", "<leader>cc", ":cexpr []<cr>", "Clear")
-
--- ########################################################################## --
 -- -Telescope
 -- ########################################################################## --
 easymap("n", "<leader>t", "", "Telescope")
