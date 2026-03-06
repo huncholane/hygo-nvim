@@ -46,6 +46,7 @@ highlight EndOfBuffer guibg=NONE ctermbg=NONE
 "set statusline=[%{getcwd()}]\ %f:%{nvim_treesitter#statusline(1000)}
 ]])
 
+vim.o.exrc = true
 vim.g.maplocalleader = ","
 vim.opt.scrolloff = 10
 vim.diagnostic.config({
