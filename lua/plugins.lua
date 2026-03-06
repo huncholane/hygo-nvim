@@ -12,7 +12,6 @@ local plugins = {
   },
   "tpope/vim-dispatch",
   { "nvim-tree/nvim-web-devicons" },
-  { "windwp/nvim-autopairs",             opts = {} },
   { "windwp/nvim-ts-autotag",            event = "InsertEnter", opts = {} },
   { "neovim/nvim-lspconfig" },
   { "saecki/crates.nvim",                tag = "stable",        opts = {} },
