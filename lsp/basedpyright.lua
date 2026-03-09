@@ -37,9 +37,21 @@ return {
   settings = {
     basedpyright = {
       analysis = {
-        typeCheckingMode = "off",
+        typeCheckingMode = "standard",
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
+        diagnosticSeverityOverrides = {
+          reportMissingTypeStubs = false,
+          reportUnusedImport = false, -- ruff handles this
+          reportUnusedVariable = false,
+          reportUnusedParameter = false,
+          reportMissingParameterType = false,
+          reportUnknownParameterType = false,
+          reportUnknownMemberType = false,
+          reportUnknownVariableType = false,
+          reportUnknownArgumentType = false,
+          reportAny = false,
+        },
       },
     },
   },
