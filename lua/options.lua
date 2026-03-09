@@ -7,6 +7,14 @@ end
 
 vim.lsp.enable(lsplist)
 
+local original_notify = vim.notify
+vim.notify = function(msg, ...)
+  if type(msg) == "string" and msg:match("Invalid server name") then
+    return
+  end
+  return original_notify(msg, ...)
+end
+
 if vim.env.SSH_TTY ~= nil then
   vim.g.clipboard = {
     name = "OSC 52",
@@ -45,6 +53,12 @@ highlight Normal guibg=NONE ctermbg=NONE
 highlight EndOfBuffer guibg=NONE ctermbg=NONE
 "set statusline=[%{getcwd()}]\ %f:%{nvim_treesitter#statusline(1000)}
 ]])
+
+local venv_path = vim.fn.getcwd() .. "/.venv"
+if vim.fn.isdirectory(venv_path) == 1 then
+  vim.env.VIRTUAL_ENV = venv_path
+  vim.env.PATH = venv_path .. "/bin:" .. vim.env.PATH
+end
 
 vim.o.exrc = true
 vim.g.maplocalleader = ","

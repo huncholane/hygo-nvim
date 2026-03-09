@@ -41,12 +41,7 @@ return {
     "nvim-mini/mini.pairs",
     event = "InsertEnter",
     config = function()
-      require("mini.pairs").setup({
-        mappings = {
-          ["<"] = { action = "open", pair = "<>", neigh_pattern = "[^\\]." },
-          [">"] = { action = "close", pair = "<>", neigh_pattern = "[^\\]." },
-        },
-      })
+      require("mini.pairs").setup()
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "rust",
         callback = function()

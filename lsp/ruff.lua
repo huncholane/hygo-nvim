@@ -35,15 +35,11 @@ return {
     client.server_capabilities.diagnosticProvider = nil
 
     vim.api.nvim_create_autocmd("BufWritePre", {
-      group = vim.api.nvim_create_augroup("RuffOrganizeImports", { clear = true }),
+      group = vim.api.nvim_create_augroup("RuffFixAll", { clear = true }),
       pattern = "*.py",
       callback = function()
         vim.lsp.buf.code_action({
           context = { only = { "source.fixAll" }, diagnostics = {} },
-          apply = true,
-        })
-        vim.lsp.buf.code_action({
-          context = { only = { "source.organizeImports" }, diagnostics = {} },
           apply = true,
         })
       end,
