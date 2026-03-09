@@ -90,9 +90,6 @@ function M.open(cmd)
   vim.keymap.set("t", "<C-h>", "<C-\\><C-n><C-w>h", { buffer = state.buf, desc = "Claude: Focus left window" })
   vim.keymap.set("t", "<C-k>", "<C-\\><C-n>", { buffer = state.buf, desc = "Claude: Normal mode" })
   vim.keymap.set("t", "<C-CR>", "\n", { buffer = state.buf, desc = "Claude: New line" })
-  vim.keymap.set("t", "<C-c>", function()
-    M.close()
-  end, { buffer = state.buf, desc = "Claude: Close window" })
 
   vim.api.nvim_create_autocmd("BufLeave", {
     buffer = state.buf,
