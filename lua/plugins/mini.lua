@@ -42,13 +42,6 @@ return {
     event = "InsertEnter",
     config = function()
       require("mini.pairs").setup()
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "rust",
-        callback = function()
-          MiniPairs.unmap_buf(0, "i", "`", "``")
-          MiniPairs.unmap_buf(0, "i", "'", "''")
-        end,
-      })
     end,
   },
   {
