@@ -49,7 +49,7 @@ return {
     event = "VeryLazy",
     opts = {
       mappings = {
-        add = "ys",
+        add = "qs",
         delete = "ds",
         replace = "cs",
         find = "",
