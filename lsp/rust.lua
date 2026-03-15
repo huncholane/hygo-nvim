@@ -171,21 +171,5 @@ return {
       reload_workspace(bufnr)
     end, { desc = "Reload current cargo workspace" })
 
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      group = vim.api.nvim_create_augroup("RustFixImports", { clear = true }),
-      buffer = bufnr,
-      callback = function()
-        vim.lsp.buf.code_action({
-          range = {
-            ["start"] = { 1, 1 },
-            ["end"] = { vim.api.nvim_buf_line_count(0), 1 },
-          },
-          filter = function(action)
-            return action.title:match("Remove all unused imports")
-          end,
-          apply = true,
-        })
-      end,
-    })
   end,
 }
