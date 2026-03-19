@@ -3,7 +3,7 @@ local function easymap(mode, lhs, rhs, desc)
 end
 
 -- Remove some bogus default keymaps
-vim.keymap.set({"n", "v", "i"}, "<F1>", "")
+vim.keymap.set({ "n", "v", "i" }, "<F1>", "")
 
 -- ########################################################################## --
 -- -Leader
