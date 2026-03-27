@@ -3,7 +3,6 @@ require("lazy-bootstrap")
 -- These plugins don't need individual files
 local plugins = {
   { "ellisonleao/dotenv.nvim",      opts = {} },
-  { "nvim-telescope/telescope.nvim" },
   { "folke/tokyonight.nvim" },
   { "mg979/vim-visual-multi" },
   {
