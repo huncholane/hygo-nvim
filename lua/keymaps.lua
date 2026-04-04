@@ -33,6 +33,15 @@ end
 vim.keymap.set("n", "<leader>l", "", { desc = "LSP" })
 vim.keymap.set("n", "<leader>lr", ":LspRestart<cr>", { desc = "Restart" })
 vim.keymap.set("n", "<leader>lm", ":Mason<cr>", { desc = "Mason" })
+vim.keymap.set("n", "<leader>lc", function ()
+  vim.cmd[[
+      if empty(filter(getwininfo(), 'v:val.quickfix'))
+        copen
+    else
+        cclose
+    endif
+  ]]
+end, {desc="Toggle Quickfix"})
 
 -- ########################################################################## --
 -- -Visual Mode Leaders
