@@ -1,6 +1,6 @@
 return {
 	cmd = { "bash-language-server", "start" },
-	filetypes = { "sh" },
+	filetypes = { "sh", "zsh" },
 	settings = {
 		bashIde = {
 			shellcheckArguments = {

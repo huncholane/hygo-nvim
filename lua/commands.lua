@@ -63,6 +63,14 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*.zsh",
+  callback = function ()
+    vim.bo.filetype = "sh"
+    vim.bo.syntax = "sh"
+  end
+})
+
 -- ########################################################################## --
 -- -Compiler
 -- ########################################################################## --

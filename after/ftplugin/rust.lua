@@ -110,3 +110,6 @@ vim.keymap.set("n", "<leader>ao", function()
     end
   end
 end, { desc = "Toggle Option" })
+
+-- Replace next todo
+vim.keymap.set("n", "<leader>at", "/todo!()<cr>c7l", { desc = "Replace todo!()" })
