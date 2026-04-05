@@ -33,15 +33,21 @@ end
 vim.keymap.set("n", "<leader>l", "", { desc = "LSP" })
 vim.keymap.set("n", "<leader>lr", ":LspRestart<cr>", { desc = "Restart" })
 vim.keymap.set("n", "<leader>lm", ":Mason<cr>", { desc = "Mason" })
-vim.keymap.set("n", "<leader>lc", function ()
-  vim.cmd[[
+vim.keymap.set("n", "<leader>lc", function()
+  vim.cmd([[
       if empty(filter(getwininfo(), 'v:val.quickfix'))
         copen
     else
         cclose
     endif
-  ]]
-end, {desc="Toggle Quickfix"})
+  ]])
+end, { desc = "Toggle Quickfix" })
+vim.keymap.set("n", "<leader>le", function()
+  vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR })
+end, { desc = "Quickfix Errors" })
+vim.keymap.set("n", "<leader>ld", function()
+  vim.diagnostic.setqflist()
+end, { desc = "Quickfix Diagnostics" })
 
 -- ########################################################################## --
 -- -Visual Mode Leaders
@@ -102,50 +108,6 @@ easymap("n", "g;", "m'A;<esc>`'", "Append Colon")
 easymap("n", "g,", "m'A,<esc>`'", "Append Comma")
 easymap("n", "gl", "", "LSP")
 easymap("n", "glt", ":ToggleDiagnostics<cr>", "Toggle")
-vim.keymap.set("n", "]E", function()
-  vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR, open = false })
-  local ok, _ = pcall(vim.cmd.cnext)
-  if not ok then
-    pcall(vim.cmd.cfirst)
-  end
-end, { desc = "Global Error" })
-
--- Previous global error
-vim.keymap.set("n", "[E", function()
-  vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR, open = false })
-  local ok, _ = pcall(vim.cmd.cprev)
-  if not ok then
-    pcall(vim.cmd.clast)
-  end
-end)
-
--- Next local error
-vim.keymap.set("n", "]e", function()
-  vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR })
-end, { desc = "Local Error" })
-
--- Previous local error
-vim.keymap.set("n", "[e", function()
-  vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR })
-end)
-
--- Next global diagnostic
-vim.keymap.set("n", "]D", function()
-  vim.diagnostic.setqflist({ open = false })
-  local ok, _ = pcall(vim.cmd.cnext)
-  if not ok then
-    pcall(vim.cmd.cfirst)
-  end
-end, { desc = "Global Diagnostic" })
-
--- Previous global diagnostic
-vim.keymap.set("n", "[D", function()
-  vim.diagnostic.setqflist({ open = false })
-  local ok, _ = pcall(vim.cmd.cprev)
-  if not ok then
-    pcall(vim.cmd.clast)
-  end
-end, { desc = "Global Diagnostic" })
 
 -- ########################################################################## --
 -- Surroundings
