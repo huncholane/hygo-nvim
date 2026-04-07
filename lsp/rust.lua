@@ -167,6 +167,10 @@ return {
       navic.attach(client, bufnr)
     end
 
+    -- Disable semantic token "string" highlight for Rust so treesitter
+    -- injections (// html raw string literals) are not overridden
+    vim.api.nvim_set_hl(0, "@lsp.type.string.rust", {})
+
     vim.api.nvim_buf_create_user_command(bufnr, "LspCargoReload", function()
       reload_workspace(bufnr)
     end, { desc = "Reload current cargo workspace" })
