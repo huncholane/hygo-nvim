@@ -3,15 +3,13 @@ local M = {}
 local terminal = require("claude.terminal")
 local session = require("claude.session")
 
----@class ClaudeConfig
----@field width? number Width of the Claude terminal split (default: 80)
----@field skip_permissions? boolean Add --dangerously-skip-permissions flag to all claude commands (default: false)
----@field open_on_start? boolean Restore Claude terminal on nvim startup if it was open last session (default: false)
-
 ---@type ClaudeConfig
 local defaults = {
+  --- Width of the Claude terminal split (default: 80)
   width = 80,
+  --- Add --dangerously-skip-permissions flag to all claude commands (default: false)
   skip_permissions = false,
+  --- Restore Claude terminal on nvim startup if it was open last session (default: false)
   open_on_start = false,
 }
 
