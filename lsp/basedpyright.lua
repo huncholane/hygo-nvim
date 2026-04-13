@@ -38,11 +38,11 @@ return {
     basedpyright = {
       analysis = {
         typeCheckingMode = "standard",
+        diagnosticMode = "workspace",
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
         diagnosticSeverityOverrides = {
           reportMissingTypeStubs = false,
-          reportUnusedImport = false, -- ruff handles this
           reportUnusedVariable = false,
           reportUnusedParameter = false,
           reportMissingParameterType = false,
