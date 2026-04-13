@@ -3,7 +3,7 @@ local M = {}
 local terminal = require("claude.terminal")
 local session = require("claude.session")
 
----@type ClaudeConfig
+---@class ClaudeConfig
 local defaults = {
   --- Width of the Claude terminal split (default: 80)
   width = 80,
