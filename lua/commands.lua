@@ -184,6 +184,7 @@ command! SafeBD if winnr('$')==1 | echoerr 'Refuse to close last window' | else 
 command! -nargs=* TN tabe | tcd <args>
 command! -nargs=+ Qfjob call add(g:qfjobs, [jobstart(<q-args>, {'on_stdout':'JobHandler', 'on_stderr':'JobHandler'}), <q-args>])
 command! RuffCheck cgetexpr system('ruff check --output-format=concise') | copen
+command! Pyright let &efm='%f:%l:%c - error: %m,%f:%l:%c - warning: %m' | cgetexpr system('basedpyright -p .') | copen
 command! Killqfjobs for j in g:qfjobs | call jobstop(j[0]) | endfor | set g:qfjobs=[]
 command! Restartqfjobs for j in g:qfjobs | call jobstop(j[0]) | let j[0] = jobstart(j[1]) | endfor
 command! -nargs=1 Resize silent! exe 'resize '.(&lines*<args>/100)

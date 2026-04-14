@@ -2,7 +2,7 @@ require("lazy-bootstrap")
 
 -- These plugins don't need individual files
 local plugins = {
-  { "ellisonleao/dotenv.nvim",      opts = {} },
+  { "ellisonleao/dotenv.nvim", opts = {} },
   { "folke/tokyonight.nvim" },
   { "mg979/vim-visual-multi" },
   {
@@ -15,6 +15,8 @@ local plugins = {
   { "neovim/nvim-lspconfig" },
   { "saecki/crates.nvim",                tag = "stable",        opts = {} },
   { "axkirillov/telescope-changed-files" },
+  { "junegunn/vim-easy-align" },
+  { "armannikoyan/rusty" },
 }
 
 -- Load plugins from lua/plugins
