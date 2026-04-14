@@ -34,7 +34,7 @@ vim.keymap.set("n", "<leader>l", "", { desc = "LSP" })
 vim.keymap.set("n", "<leader>lr", ":LspRestart<cr>", { desc = "Restart" })
 vim.keymap.set("n", "<leader>lm", ":Mason<cr>", { desc = "Mason" })
 vim.keymap.set("n", "<leader>ls", ":Telescope lsp_document_symbols<cr>", { desc = "Document Symbols" })
-vim.keymap.set("n", "<leader>lw", ":Telescope lsp_document_symbols<cr>", { desc = "Workspace Symbols" })
+vim.keymap.set("n", "<leader>lw", ":Telescope lsp_workspace_symbols<cr>", { desc = "Workspace Symbols" })
 vim.keymap.set("n", "<leader>lc", function()
   vim.cmd([[
       if empty(filter(getwininfo(), 'v:val.quickfix'))
