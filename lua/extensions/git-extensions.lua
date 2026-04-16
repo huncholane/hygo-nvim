@@ -137,6 +137,8 @@ M.setup = function(opts)
   M.register_keymap("l", M.toggle_last_gvdiff, "Toggle Diff")
   M.register_keymap("p", M.open_previous_commits, "Previous Commit Files")
   M.register_keymap("g", ":G<cr>", "Fugitive")
+  M.register_keymap("a", ":Gitsigns setqflist all<cr>", "Quickfix All Hunks")
+  M.register_keymap("c", ":Gitsigns setqflist<cr>", "Quickfix Current Buffer Hunks")
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })

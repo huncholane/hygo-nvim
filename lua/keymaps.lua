@@ -8,6 +8,8 @@ vim.keymap.set({ "n", "v", "i" }, "<F1>", "")
 -- ########################################################################## --
 -- -Leader
 -- ########################################################################## --
+easymap("n", "<leader>o", "o<esc>cc", "New Line, No Comment")
+easymap("n", "<leader>O", "O<esc>cc", "New Line, No Comment")
 easymap("n", "<leader>k", ":SafeBD<cr>", "Close Buffer")
 easymap("n", "<leader>b", ":LastFile<cr>", "Last File")
 easymap("n", "<leader>q", ":silent! wa! | silent! qa!<cr>", "Quit")
@@ -54,6 +56,10 @@ vim.keymap.set("n", "<leader>lb", function()
   local diagnostics = vim.diagnostic.get(0)
   local qflist = vim.diagnostic.toqflist(diagnostics)
   vim.fn.setqflist(qflist, "r")
+  if #diagnostics == 0 then
+    vim.cmd("cclose")
+    return
+  end
   vim.cmd("copen")
 end, { desc = "Quickfix Buf Diagnostics" })
 
