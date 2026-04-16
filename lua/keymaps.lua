@@ -46,10 +46,16 @@ vim.keymap.set("n", "<leader>lc", function()
 end, { desc = "Toggle Quickfix" })
 vim.keymap.set("n", "<leader>le", function()
   vim.diagnostic.setqflist({ severity = vim.diagnostic.severity.ERROR })
-end, { desc = "Quickfix Errors" })
+end, { desc = "Quickfix All Errors" })
 vim.keymap.set("n", "<leader>ld", function()
   vim.diagnostic.setqflist()
-end, { desc = "Quickfix Diagnostics" })
+end, { desc = "Quickfix All Diagnostics" })
+vim.keymap.set("n", "<leader>lb", function()
+  local diagnostics = vim.diagnostic.get(0)
+  local qflist = vim.diagnostic.toqflist(diagnostics)
+  vim.fn.setqflist(qflist, "r")
+  vim.cmd("copen")
+end, { desc = "Quickfix Buf Diagnostics" })
 
 -- ########################################################################## --
 -- -Visual Mode Leaders

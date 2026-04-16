@@ -15,8 +15,8 @@ return {
         require("null-ls.builtins.formatting.prettier").with({
           filetypes = { "sh", "env" },
         }),
-        require("none-ls.formatting.mbake"),
-        require("null-ls.builtins.diagnostics.checkmake"),
+        -- require("none-ls.formatting.mbake"),
+        -- require("null-ls.builtins.diagnostics.checkmake"),
         require("none-ls.formatting.taplo"),
         require("null-ls.builtins.formatting.stylua"),
         require("null-ls.builtins.diagnostics.hadolint"),

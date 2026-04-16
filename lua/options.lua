@@ -52,11 +52,6 @@ set tabline=%!NumberedTabPages()
 highlight Normal guibg=NONE ctermbg=NONE
 highlight EndOfBuffer guibg=NONE ctermbg=NONE
 "set statusline=[%{getcwd()}]\ %f:%{nvim_treesitter#statusline(1000)}
-
-" Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga <Plug>(EasyAlign)
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga <Plug>(EasyAlign)
 ]])
 
 local venv_path = vim.fn.getcwd() .. "/.venv"

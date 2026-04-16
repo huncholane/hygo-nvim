@@ -15,7 +15,6 @@ local plugins = {
   { "neovim/nvim-lspconfig" },
   { "saecki/crates.nvim",                tag = "stable",        opts = {} },
   { "axkirillov/telescope-changed-files" },
-  { "junegunn/vim-easy-align" },
   { "armannikoyan/rusty" },
 }
 
