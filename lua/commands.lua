@@ -108,6 +108,16 @@ end, {
   desc = "Run make commands with django compiler",
 })
 
+vim.api.nvim_create_user_command("DJTest", function(args)
+  vim.cmd("Comp django")
+  vim.cmd([[set makeprg=python\ manage.py]])
+  vim.cmd("Make test --keepdb " .. args.args)
+end, {
+  nargs = "*",
+  complete = "file",
+  desc = "Run django test --keepdb into quickfix",
+})
+
 -- ########################################################################## --
 -- -Tabs
 -- ########################################################################## --
@@ -166,6 +176,51 @@ vim.api.nvim_create_user_command("LastFile", function()
   end
 end, {})
 
+-- Runs pyright on a directory
+vim.api.nvim_create_user_command("Pyright", function(opts)
+  local lsp_file = vim.api.nvim_get_runtime_file("lsp/basedpyright.lua", false)[1]
+  local analysis = vim.tbl_get(dofile(lsp_file), "settings", "basedpyright", "analysis") or {}
+
+  local cwd = vim.fn.getcwd()
+  local target = opts.args ~= "" and vim.fn.fnamemodify(opts.args, ":p") or cwd
+
+  local cfg = {
+    include = { target },
+    typeCheckingMode = analysis.typeCheckingMode,
+    useLibraryCodeForTypes = analysis.useLibraryCodeForTypes,
+  }
+  for k, v in pairs(analysis.diagnosticSeverityOverrides or {}) do
+    if type(v) == "boolean" then
+      cfg[k] = v and "error" or "none"
+    else
+      cfg[k] = v
+    end
+  end
+
+  -- extend project's pyrightconfig.json if present so venv/exclude/extraPaths are preserved
+  local project_cfg = vim.fn.findfile("pyrightconfig.json", cwd .. ";")
+  if project_cfg ~= "" then
+    cfg.extends = vim.fn.fnamemodify(project_cfg, ":p")
+  end
+
+  -- place the temp config inside the project so relative paths, venv, and site-packages resolve
+  local tmp = cwd .. "/.pyright-qf-tmp.json"
+  local f = assert(io.open(tmp, "w"))
+  f:write(vim.json.encode(cfg))
+  f:close()
+
+  local result = vim.system({ "basedpyright", "-p", tmp }, { cwd = cwd, text = true }):wait()
+  os.remove(tmp)
+
+  local lines = vim.split((result.stdout or "") .. (result.stderr or ""), "\n")
+  vim.fn.setqflist({}, " ", {
+    title = "basedpyright",
+    lines = lines,
+    efm = "%f:%l:%c - error: %m,%f:%l:%c - warning: %m",
+  })
+  vim.cmd("copen")
+end, { nargs = "?", complete = "dir", desc = "Run basedpyright into quickfix using LSP settings" })
+
 -- ########################################################################## --
 -- -Vimscript
 -- ########################################################################## --
@@ -184,7 +239,6 @@ command! SafeBD if winnr('$')==1 | echoerr 'Refuse to close last window' | else 
 command! -nargs=* TN tabe | tcd <args>
 command! -nargs=+ Qfjob call add(g:qfjobs, [jobstart(<q-args>, {'on_stdout':'JobHandler', 'on_stderr':'JobHandler'}), <q-args>])
 command! RuffCheck cgetexpr system('ruff check --output-format=concise') | copen
-command! Pyright let &efm='%f:%l:%c - error: %m,%f:%l:%c - warning: %m' | cgetexpr system('basedpyright -p .') | copen
 command! Killqfjobs for j in g:qfjobs | call jobstop(j[0]) | endfor | set g:qfjobs=[]
 command! Restartqfjobs for j in g:qfjobs | call jobstop(j[0]) | let j[0] = jobstart(j[1]) | endfor
 command! -nargs=1 Resize silent! exe 'resize '.(&lines*<args>/100)
