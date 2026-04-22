@@ -28,5 +28,12 @@ return {
   init_options = {
     provideFormatter = true,
   },
-  root_markers = { '.git' },
+  root_dir = function(bufnr, on_dir)
+    local fname = vim.api.nvim_buf_get_name(bufnr)
+    local size = vim.fn.getfsize(fname)
+    if size > 10 * 1024 then
+      return
+    end
+    on_dir(vim.fs.root(bufnr, { '.git' }) or vim.fn.getcwd())
+  end,
 }

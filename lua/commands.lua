@@ -72,6 +72,42 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 -- ########################################################################## --
+-- -BigFile
+-- ########################################################################## --
+local bigfile_group = vim.api.nvim_create_augroup("BigFile", { clear = true })
+local BIGFILE_BYTES = 1024 * 1024 -- 1 MB
+
+vim.api.nvim_create_autocmd("BufReadPre", {
+  group = bigfile_group,
+  callback = function(args)
+    local ok, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(args.buf))
+    if not ok or not stat or stat.size < BIGFILE_BYTES then
+      return
+    end
+    vim.b[args.buf].bigfile = true
+    vim.bo[args.buf].swapfile = false
+    vim.bo[args.buf].undolevels = -1
+    vim.opt_local.foldmethod = "manual"
+    vim.opt_local.spell = false
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufReadPost", {
+  group = bigfile_group,
+  callback = function(args)
+    if not vim.b[args.buf].bigfile then
+      return
+    end
+    vim.cmd("syntax clear")
+    vim.bo[args.buf].syntax = "off"
+    pcall(vim.treesitter.stop, args.buf)
+    pcall(vim.cmd, "NoMatchParen")
+    vim.opt_local.cursorline = false
+    vim.opt_local.relativenumber = false
+  end,
+})
+
+-- ########################################################################## --
 -- -Compiler
 -- ########################################################################## --
 vim.api.nvim_create_user_command("Comp", function(args)
