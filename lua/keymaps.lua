@@ -105,10 +105,6 @@ vim.keymap.set("n", "<C-S-Left>", ":vertical resize -2<CR>")
 vim.keymap.set("n", "<C-S-Right>", ":vertical resize +2<CR>")
 vim.keymap.set("n", "<C-S-Down>", ":resize -2<CR>")
 vim.keymap.set("n", "<C-S-Up>", ":resize +2<CR>")
-for i = 1, 9 do
-  easymap("n", "<leader>w" .. i, ":Resize " .. i .. "0<cr>", "Resize " .. i .. "0%")
-end
-easymap("n", "<leader>w0", ":Resize 100<cr>", "Resize 100%")
 
 -- ########################################################################## --
 -- -Gotos
