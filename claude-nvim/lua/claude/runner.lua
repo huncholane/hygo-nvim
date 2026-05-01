@@ -240,7 +240,8 @@ function M.is_busy(sid)
   return st and st.job ~= nil
 end
 
-function M.send(sid, prompt_text)
+function M.send(sid, prompt_text, opts)
+  opts = opts or {}
   local st = active[sid]
   if not st then return false, "no session" end
   if st.job then return false, "previous prompt still running" end
@@ -260,7 +261,7 @@ function M.send(sid, prompt_text)
   table.insert(cmd, prompt_text)
 
   local ok_u, ui = pcall(require, "claude.ui")
-  if ok_u then ui.append_user_prompt(sid, prompt_text) end
+  if ok_u and not opts.skip_ui_prompt then ui.append_user_prompt(sid, prompt_text) end
 
   log("CMD", table.concat(cmd, " | "))
 

@@ -8,23 +8,30 @@ local panel = {
 }
 
 local spinner = {
-  ns = vim.api.nvim_create_namespace("claude_spinner"),
   timer = nil,
-  mark_id = nil,
+  line = nil,
   frame = 1,
   frames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
 }
 
 local function spinner_render()
   if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then return end
-  local lc = vim.api.nvim_buf_line_count(panel.buf)
-  local line = math.max(0, lc - 1)
   local txt = spinner.frames[spinner.frame] .. " thinking…"
-  spinner.mark_id = vim.api.nvim_buf_set_extmark(panel.buf, spinner.ns, line, 0, {
-    id = spinner.mark_id,
-    virt_lines = { { { txt, "Comment" } } },
-    virt_lines_above = false,
-  })
+  vim.bo[panel.buf].modifiable = true
+  local appended = false
+  if spinner.line ~= nil and spinner.line < vim.api.nvim_buf_line_count(panel.buf) then
+    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.line, spinner.line + 1, false, { txt })
+  else
+    local lc = vim.api.nvim_buf_line_count(panel.buf)
+    pcall(vim.api.nvim_buf_set_lines, panel.buf, lc, lc, false, { txt })
+    spinner.line = lc
+    appended = true
+  end
+  vim.bo[panel.buf].modifiable = false
+  if appended and panel.win and vim.api.nvim_win_is_valid(panel.win) then
+    local lc = vim.api.nvim_buf_line_count(panel.buf)
+    pcall(vim.api.nvim_win_set_cursor, panel.win, { lc, 0 })
+  end
 end
 
 local function spinner_stop()
@@ -33,10 +40,14 @@ local function spinner_stop()
     if not spinner.timer:is_closing() then spinner.timer:close() end
     spinner.timer = nil
   end
-  if spinner.mark_id and panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
-    pcall(vim.api.nvim_buf_del_extmark, panel.buf, spinner.ns, spinner.mark_id)
+  if spinner.line ~= nil and panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
+    if spinner.line < vim.api.nvim_buf_line_count(panel.buf) then
+      vim.bo[panel.buf].modifiable = true
+      pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.line, spinner.line + 1, false, {})
+      vim.bo[panel.buf].modifiable = false
+    end
   end
-  spinner.mark_id = nil
+  spinner.line = nil
 end
 
 local function spinner_start()
@@ -44,7 +55,7 @@ local function spinner_start()
   spinner.frame = 1
   spinner_render()
   spinner.timer = vim.uv.new_timer()
-  spinner.timer:start(0, 90, vim.schedule_wrap(function()
+  spinner.timer:start(90, 90, vim.schedule_wrap(function()
     spinner.frame = (spinner.frame % #spinner.frames) + 1
     spinner_render()
   end))
@@ -307,13 +318,14 @@ function M.open_input(opts)
     if closed then return end
     local lines = vim.api.nvim_buf_get_lines(input_buf, 0, -1, false)
     local text = table.concat(lines, "\n")
-    close()
-    if text:match("^%s*$") then return end
+    if text:match("^%s*$") then close(); return end
     if context and context ~= "" then
       text = context .. "\n\n" .. text
     end
+    M.append_user_prompt(sid, text)
+    close()
     local runner = require("claude.runner")
-    local ok, err = runner.send(sid, text)
+    local ok, err = runner.send(sid, text, { skip_ui_prompt = true })
     if not ok then
       vim.notify("claude: " .. tostring(err), vim.log.levels.WARN)
     end
@@ -385,17 +397,21 @@ function M.append_user_prompt(sid, text)
   table.insert(lines, "")
   append_lines(lines)
   spinner_start()
-  vim.cmd("redraw")
+  pcall(vim.cmd, "redraw!")
 end
 
 function M.append_assistant_text(sid, text)
   if sid ~= panel.sid then return end
-  vim.schedule(function() append_text_streaming(text) end)
+  vim.schedule(function()
+    spinner_stop()
+    append_text_streaming(text)
+  end)
 end
 
 function M.append_tool_use(sid, name, path)
   if sid ~= panel.sid then return end
   vim.schedule(function()
+    spinner_stop()
     append_lines({ "", "> **" .. name .. "** `" .. path .. "`", "" })
   end)
 end
