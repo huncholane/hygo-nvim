@@ -139,7 +139,7 @@ local function handle_event(sid, evt)
           if name == "Bash" then
             summary = input.command or ""
           elseif name == "Grep" or name == "Glob" then
-            summary = input.pattern or ""
+summary = input.pattern or ""
           elseif name == "Task" then
             summary = input.description or ""
           elseif name == "WebFetch" or name == "WebSearch" then

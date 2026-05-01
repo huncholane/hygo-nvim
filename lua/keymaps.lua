@@ -125,6 +125,12 @@ vim.keymap.set("n", "gc", require("telescope.builtin").grep_string, { desc= "Tel
 -- ########################################################################## --
 vim.keymap.set({ "x", "o" }, "ae", ":<C-u>normal! ggVG<CR>", { desc = "around entire buffer" })
 
+-- ########################################################################## --
+-- -Visual Line Motion (respect wrap)
+-- ########################################################################## --
+vim.keymap.set({ "n", "v" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+vim.keymap.set({ "n", "v" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+
 -- Extras
 easymap({ "i", "n" }, "<C-s>", "<cmd>w<cr>", "Save")
 easymap({ "i", "n" }, "<C-p>", vim.diagnostic.open_float, "Open Diagnostic Float")
