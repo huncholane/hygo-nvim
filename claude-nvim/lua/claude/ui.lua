@@ -7,6 +7,49 @@ local panel = {
   width = 80,
 }
 
+local spinner = {
+  ns = vim.api.nvim_create_namespace("claude_spinner"),
+  timer = nil,
+  mark_id = nil,
+  frame = 1,
+  frames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+}
+
+local function spinner_render()
+  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then return end
+  local lc = vim.api.nvim_buf_line_count(panel.buf)
+  local line = math.max(0, lc - 1)
+  local txt = spinner.frames[spinner.frame] .. " thinking…"
+  spinner.mark_id = vim.api.nvim_buf_set_extmark(panel.buf, spinner.ns, line, 0, {
+    id = spinner.mark_id,
+    virt_lines = { { { txt, "Comment" } } },
+    virt_lines_above = false,
+  })
+end
+
+local function spinner_stop()
+  if spinner.timer then
+    spinner.timer:stop()
+    if not spinner.timer:is_closing() then spinner.timer:close() end
+    spinner.timer = nil
+  end
+  if spinner.mark_id and panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
+    pcall(vim.api.nvim_buf_del_extmark, panel.buf, spinner.ns, spinner.mark_id)
+  end
+  spinner.mark_id = nil
+end
+
+local function spinner_start()
+  spinner_stop()
+  spinner.frame = 1
+  spinner_render()
+  spinner.timer = vim.uv.new_timer()
+  spinner.timer:start(0, 90, vim.schedule_wrap(function()
+    spinner.frame = (spinner.frame % #spinner.frames) + 1
+    spinner_render()
+  end))
+end
+
 local function ensure_buf()
   if panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
     return panel.buf
@@ -302,6 +345,7 @@ function M.append_user_prompt(sid, text)
     table.insert(lines, "## Claude")
     table.insert(lines, "")
     append_lines(lines)
+    spinner_start()
   end)
 end
 
@@ -319,7 +363,10 @@ end
 
 function M.append_separator(sid)
   if sid ~= panel.sid then return end
-  vim.schedule(function() append_lines({ "", "---", "" }) end)
+  vim.schedule(function()
+    spinner_stop()
+    append_lines({ "", "---", "" })
+  end)
 end
 
 function M.append_stderr(sid, line)
@@ -329,6 +376,7 @@ end
 
 function M.on_prompt_complete(sid, prompt, had_changes)
   if sid ~= panel.sid then return end
+  vim.schedule(function() spinner_stop() end)
   if had_changes then
     vim.schedule(function()
       append_lines({ "_recorded — " .. #(prompt.files or {}) .. " file(s) changed_", "" })
