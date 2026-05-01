@@ -250,6 +250,45 @@ local function replay_history(claude_id)
   return turns > 0
 end
 
+function M.resume_session(claude_id)
+  if not claude_id or claude_id == "" then
+    vim.notify("claude: missing claude_id", vim.log.levels.WARN)
+    return
+  end
+  local runner = require("claude.runner")
+  local store = require("claude.store")
+  -- find existing session.json with this claude_id, else build thin session
+  local session
+  for _, entry in ipairs(store.list_sessions()) do
+    local s = store.load_path(entry.path)
+    if s and s.claude_id == claude_id then session = s break end
+  end
+  if not session then
+    session = {
+      id = store.uuid(),
+      started_at = os.time(),
+      cwd = vim.fn.getcwd(),
+      claude_id = claude_id,
+      prompts = {},
+    }
+  end
+  local sid = runner.attach_existing(session)
+  panel.sid = sid
+  store.write_pointer({ session_id = session.id, claude_id = claude_id, ts = os.time(), cwd = session.cwd })
+  clear_buf()
+  M.open_panel()
+  append_lines({
+    "# Claude — resumed",
+    "_id: " .. sid:sub(1, 8) .. "  ←  " .. claude_id:sub(1, 8) .. "_",
+    "",
+  })
+  local replayed = replay_history(claude_id)
+  if not replayed then
+    append_lines({ "_(no prior transcript found on disk)_", "" })
+  end
+  append_lines({ "Press `i` to send a prompt.", "" })
+end
+
 function M.resume_last()
   local runner = require("claude.runner")
   local sid = runner.resume_from_pointer()
@@ -268,6 +307,36 @@ function M.resume_last()
     "",
   })
   local replayed = replay_history(session.claude_id)
+  if not replayed then
+    append_lines({ "_(no prior transcript found on disk)_", "" })
+  end
+  append_lines({ "Press `i` to send a prompt.", "" })
+end
+
+function M.resume_session(claude_id)
+  if not claude_id or claude_id == "" then
+    vim.notify("claude: missing session id", vim.log.levels.WARN)
+    return
+  end
+  local runner = require("claude.runner")
+  local store = require("claude.store")
+  local session = {
+    id = store.uuid(),
+    started_at = os.time(),
+    cwd = vim.fn.getcwd(),
+    claude_id = claude_id,
+    prompts = {},
+  }
+  local sid = runner.attach_existing(session)
+  panel.sid = sid
+  clear_buf()
+  M.open_panel()
+  append_lines({
+    "# Claude — resumed",
+    "_id: " .. sid:sub(1, 8) .. "  ←  " .. claude_id:sub(1, 8) .. "_",
+    "",
+  })
+  local replayed = replay_history(claude_id)
   if not replayed then
     append_lines({ "_(no prior transcript found on disk)_", "" })
   end
