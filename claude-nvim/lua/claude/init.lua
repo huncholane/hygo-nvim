@@ -36,6 +36,7 @@ function M.setup(opts)
   vim.keymap.set("n", "<leader>cr", ui.resume_last, { desc = "Claude: Resume last session" })
   vim.keymap.set("n", "<leader>cq", pickers.prompts_picker, { desc = "Claude: Prompts → quickfix" })
   vim.keymap.set("n", "<leader>cl", pickers.qf_last, { desc = "Claude: Last prompt → quickfix" })
+  vim.keymap.set("n", "<leader>cp", ui.open_prompt_keep_focus, { desc = "Claude: Prompt (keep focus)" })
 
   vim.keymap.set("v", "<leader>c", function()
     edit.prompt_visual()

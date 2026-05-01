@@ -220,11 +220,13 @@ function M.resume_last()
   append_lines({ "Press `i` to send a prompt.", "" })
 end
 
-function M.open_input()
+function M.open_input(opts)
+  opts = opts or {}
   if not panel.sid then
     M.start_new()
   end
   local sid = panel.sid
+  local return_to = opts.return_to
   local input_buf = vim.api.nvim_create_buf(false, true)
   vim.bo[input_buf].bufhidden = "wipe"
   vim.bo[input_buf].filetype = "markdown"
@@ -252,6 +254,9 @@ function M.open_input()
     if vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     end
+    if return_to and vim.api.nvim_win_is_valid(return_to) then
+      pcall(vim.api.nvim_set_current_win, return_to)
+    end
   end
   local function send()
     if closed then return end
@@ -270,6 +275,18 @@ function M.open_input()
   vim.keymap.set({ "n", "i" }, "<C-c>", close, km)
   vim.keymap.set("n", "q", close, km)
   vim.keymap.set("n", "<Esc>", close, km)
+end
+
+function M.open_prompt_keep_focus()
+  local origin = vim.api.nvim_get_current_win()
+  if not M.is_open() then
+    if panel.sid then
+      M.open_panel()
+    else
+      M.start_new()
+    end
+  end
+  M.open_input({ return_to = origin })
 end
 
 -- runner callbacks
