@@ -121,6 +121,7 @@ function M.prompt_visual()
   local function close_popup()
     if closed then return end
     closed = true
+    pcall(vim.cmd, "stopinsert")
     if vim.api.nvim_win_is_valid(pop_win) then
       vim.api.nvim_win_close(pop_win, true)
     end
