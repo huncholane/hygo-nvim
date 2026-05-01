@@ -75,8 +75,7 @@ function M.find()
       .. "Output ONLY a JSON array (no markdown fences, no commentary, no prose) of objects with keys: "
       .. 'path (absolute file path string), lnum (1-indexed integer line number), snippet (the matching line content, trimmed of leading/trailing whitespace).\n\n'
       .. "Query: " .. query
-    local cmd = { "claude", "-p", prompt }
-    if skip_permissions then table.insert(cmd, "--dangerously-skip-permissions") end
+    local cmd = { "claude", "-p", "--model", "claude-haiku-4-5", "--dangerously-skip-permissions", prompt }
     vim.system(cmd, { text = true }, vim.schedule_wrap(function(out)
       if out.code ~= 0 then
         vim.notify("claude failed: " .. (out.stderr or ""), vim.log.levels.ERROR)
