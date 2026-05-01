@@ -337,19 +337,32 @@ function M.open_input(opts)
   vim.keymap.set("n", "<Esc>", close, km)
 end
 
-local function capture_visual_selection()
-  local old_reg = vim.fn.getreg('"')
-  local old_regtype = vim.fn.getregtype('"')
-  vim.cmd('noautocmd normal! gv"vy')
-  local sel = vim.fn.getreg("v")
-  vim.fn.setreg('"', old_reg, old_regtype)
-  return sel or ""
+local function capture_visual_selection(bufnr)
+  local s = vim.fn.getpos("'<")
+  local e = vim.fn.getpos("'>")
+  local sr, sc = s[2] - 1, s[3] - 1
+  local er, ec = e[2] - 1, e[3]
+  if sr < 0 or er < 0 then return "" end
+  local mode = vim.fn.visualmode()
+  if mode == "V" then
+    local lines = vim.api.nvim_buf_get_lines(bufnr, sr, er + 1, false)
+    return table.concat(lines, "\n")
+  end
+  local last_line = vim.api.nvim_buf_get_lines(bufnr, er, er + 1, false)[1] or ""
+  ec = math.min(ec, #last_line)
+  sc = math.max(0, sc)
+  local ok, lines = pcall(vim.api.nvim_buf_get_text, bufnr, sr, sc, er, ec, {})
+  if ok and lines then return table.concat(lines, "\n") end
+  return ""
 end
 
 function M.prompt_visual_chat()
   local origin_buf = vim.api.nvim_get_current_buf()
   local origin_win = vim.api.nvim_get_current_win()
-  local sel = capture_visual_selection()
+  if vim.fn.mode():match("^[vV\22]") then
+    vim.cmd("noautocmd normal! \27")
+  end
+  local sel = capture_visual_selection(origin_buf)
   if sel == "" then
     vim.notify("claude: empty selection", vim.log.levels.WARN)
     return
