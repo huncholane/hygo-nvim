@@ -332,15 +332,25 @@ function M.send(sid, prompt_text, opts)
       log("EXIT", code)
       flush_line_buf(sid)
       st.job = nil
-      if st.current_prompt then
-        flush_prompt(sid)
+      local was_cancelled = st.cancelled
+      st.cancelled = false
+      if was_cancelled then
+        st.current_prompt = nil
+        st.before_files = {}
+        vim.schedule(function()
+          if ok_u then ui.append_cancelled(sid) end
+        end)
+      else
+        if st.current_prompt then
+          flush_prompt(sid)
+        end
+        if code ~= 0 then
+          vim.schedule(function()
+            vim.notify("claude exited " .. tostring(code), vim.log.levels.ERROR)
+          end)
+        end
       end
       persist_pointer(st)
-      if code ~= 0 then
-        vim.schedule(function()
-          vim.notify("claude exited " .. tostring(code), vim.log.levels.ERROR)
-        end)
-      end
     end,
   })
   if st.job <= 0 then
@@ -355,6 +365,25 @@ end
 function M.get_session(sid)
   local st = active[sid]
   return st and st.session or nil
+end
+
+function M.cancel(sid)
+  local st = active[sid]
+  if not st or not st.job then return false end
+  st.cancelled = true
+  pcall(vim.fn.jobstop, st.job)
+  return true
+end
+
+function M.cancel_active()
+  for sid, st in pairs(active) do
+    if st.job then
+      st.cancelled = true
+      pcall(vim.fn.jobstop, st.job)
+      return sid
+    end
+  end
+  return nil
 end
 
 return M

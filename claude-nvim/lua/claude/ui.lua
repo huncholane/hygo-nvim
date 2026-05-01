@@ -594,6 +594,26 @@ function M.append_separator(sid)
   end)
 end
 
+function M.append_cancelled(sid)
+  if sid ~= panel.sid then return end
+  vim.schedule(function()
+    spinner_stop()
+    append_lines({ "", "_— cancelled —_", "", "---", "" })
+  end)
+end
+
+function M.cancel_current()
+  local runner = require("claude.runner")
+  local sid = panel.sid
+  if not sid then
+    vim.notify("claude: no active session", vim.log.levels.WARN)
+    return
+  end
+  if not runner.cancel(sid) then
+    vim.notify("claude: nothing to cancel", vim.log.levels.WARN)
+  end
+end
+
 function M.append_stderr(sid, line)
   if sid ~= panel.sid then return end
   vim.schedule(function() append_lines({ "_stderr: " .. line .. "_" }) end)

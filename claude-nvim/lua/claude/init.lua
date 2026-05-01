@@ -31,6 +31,7 @@ function M.setup(opts)
 
   vim.keymap.set("n", "<leader>c", "", { desc = "Claude" })
 
+  vim.keymap.set("n", "<leader>cc", ui.cancel_current, { desc = "Claude: Cancel current prompt" })
   vim.keymap.set("n", "<leader>ct", ui.toggle, { desc = "Claude: Toggle panel" })
   vim.keymap.set("n", "<leader>cn", ui.start_new, { desc = "Claude: New session" })
   vim.keymap.set("n", "<leader>cr", ui.resume_last, { desc = "Claude: Resume last session" })
