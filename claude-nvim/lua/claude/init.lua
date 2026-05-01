@@ -41,6 +41,10 @@ function M.setup(opts)
   vim.keymap.set("v", "<leader>c", function()
     edit.prompt_visual()
   end, { desc = "Claude: Edit selection with prompt" })
+
+  vim.keymap.set("v", "<leader>p", function()
+    ui.prompt_visual_chat()
+  end, { desc = "Claude: Chat with selection as context" })
 end
 
 return M

@@ -270,6 +270,7 @@ function M.open_input(opts)
   end
   local sid = panel.sid
   local return_to = opts.return_to
+  local context = opts.context
   local input_buf = vim.api.nvim_create_buf(false, true)
   vim.bo[input_buf].bufhidden = "wipe"
   vim.bo[input_buf].filetype = "markdown"
@@ -284,7 +285,8 @@ function M.open_input(opts)
     height = height,
     style = "minimal",
     border = "rounded",
-    title = " Claude prompt — <C-s> send  <C-c> cancel ",
+    title = context and " Claude prompt (with context) — <C-s> send  <C-c> cancel "
+      or " Claude prompt — <C-s> send  <C-c> cancel ",
     title_pos = "center",
   })
   vim.cmd("startinsert")
@@ -307,6 +309,9 @@ function M.open_input(opts)
     local text = table.concat(lines, "\n")
     close()
     if text:match("^%s*$") then return end
+    if context and context ~= "" then
+      text = context .. "\n\n" .. text
+    end
     local runner = require("claude.runner")
     local ok, err = runner.send(sid, text)
     if not ok then
@@ -320,13 +325,55 @@ function M.open_input(opts)
   vim.keymap.set("n", "<Esc>", close, km)
 end
 
+local function capture_visual_selection()
+  local old_reg = vim.fn.getreg('"')
+  local old_regtype = vim.fn.getregtype('"')
+  vim.cmd('noautocmd normal! gv"vy')
+  local sel = vim.fn.getreg("v")
+  vim.fn.setreg('"', old_reg, old_regtype)
+  return sel or ""
+end
+
+function M.prompt_visual_chat()
+  local origin_buf = vim.api.nvim_get_current_buf()
+  local origin_win = vim.api.nvim_get_current_win()
+  local sel = capture_visual_selection()
+  if sel == "" then
+    vim.notify("claude: empty selection", vim.log.levels.WARN)
+    return
+  end
+  local s = vim.fn.getpos("'<")
+  local e = vim.fn.getpos("'>")
+  local fname = vim.api.nvim_buf_get_name(origin_buf)
+  local rel = fname ~= "" and vim.fn.fnamemodify(fname, ":.") or "[No Name]"
+  local ft = vim.bo[origin_buf].filetype or ""
+  local context = string.format(
+    "<context>\n%s:%d-%d\n```%s\n%s\n```\n</context>",
+    rel, s[2], e[2], ft, sel
+  )
+
+  if not M.is_open() then
+    if panel.sid then
+      M.open_panel()
+    else
+      M.start_new()
+    end
+  end
+  M.open_input({ return_to = origin_win, context = context })
+end
+
 function M.open_prompt_keep_focus()
   local origin = vim.api.nvim_get_current_win()
   if not M.is_open() then
     if panel.sid then
       M.open_panel()
     else
-      M.start_new()
+      local store = require("claude.store")
+      if store.read_pointer() then
+        M.resume_last()
+      else
+        M.start_new()
+      end
     end
   end
   M.open_input({ return_to = origin })
@@ -336,17 +383,16 @@ end
 
 function M.append_user_prompt(sid, text)
   if sid ~= panel.sid then return end
-  vim.schedule(function()
-    local lines = { "## You", "" }
-    for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
-      table.insert(lines, l)
-    end
-    table.insert(lines, "")
-    table.insert(lines, "## Claude")
-    table.insert(lines, "")
-    append_lines(lines)
-    spinner_start()
-  end)
+  local lines = { "## You", "" }
+  for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
+    table.insert(lines, l)
+  end
+  table.insert(lines, "")
+  table.insert(lines, "## Claude")
+  table.insert(lines, "")
+  append_lines(lines)
+  spinner_start()
+  vim.cmd("redraw")
 end
 
 function M.append_assistant_text(sid, text)
