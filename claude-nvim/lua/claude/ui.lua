@@ -512,6 +512,35 @@ function M.append_assistant_text(sid, text)
   end)
 end
 
+local ns_diff = vim.api.nvim_create_namespace("claude_panel_diff")
+
+function M.append_diff(sid, lines)
+  if sid ~= panel.sid then return end
+  vim.schedule(function()
+    local buf = panel.buf
+    if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+    spinner_remove_if_present()
+    vim.bo[buf].modifiable = true
+    local start_row = vim.api.nvim_buf_line_count(buf)
+    vim.api.nvim_buf_set_lines(buf, start_row, start_row, false, lines)
+    vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "" })
+    vim.bo[buf].modifiable = false
+    for i, l in ipairs(lines) do
+      local row = start_row + i - 1
+      local hl
+      local c = l:sub(1, 1)
+      if c == "+" then hl = "DiffAdd"
+      elseif c == "-" then hl = "DiffDelete"
+      elseif l:sub(1, 2) == "@@" then hl = "DiffChange" end
+      if hl then
+        pcall(vim.api.nvim_buf_set_extmark, buf, ns_diff, row, 0, { line_hl_group = hl })
+      end
+    end
+    spinner_render()
+    scroll_to_bottom_now()
+  end)
+end
+
 function M.append_tool_use(sid, name, summary)
   if sid ~= panel.sid then return end
   vim.schedule(function()

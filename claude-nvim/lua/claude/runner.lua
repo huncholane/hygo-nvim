@@ -154,6 +154,36 @@ local function handle_event(sid, evt)
           summary = (summary or ""):gsub("\n", " ")
           if #summary > 200 then summary = summary:sub(1, 200) .. "…" end
           ui.append_tool_use(sid, name, summary)
+
+          local diff_lines
+          if name == "Edit" and input.old_string and input.new_string then
+            diff_lines = {}
+            for _, l in ipairs(vim.split(input.old_string, "\n", { plain = true })) do
+              table.insert(diff_lines, "- " .. l)
+            end
+            for _, l in ipairs(vim.split(input.new_string, "\n", { plain = true })) do
+              table.insert(diff_lines, "+ " .. l)
+            end
+          elseif name == "MultiEdit" and type(input.edits) == "table" then
+            diff_lines = {}
+            for i, e in ipairs(input.edits) do
+              if i > 1 then table.insert(diff_lines, "@@") end
+              for _, l in ipairs(vim.split(e.old_string or "", "\n", { plain = true })) do
+                table.insert(diff_lines, "- " .. l)
+              end
+              for _, l in ipairs(vim.split(e.new_string or "", "\n", { plain = true })) do
+                table.insert(diff_lines, "+ " .. l)
+              end
+            end
+          elseif name == "Write" and input.content then
+            diff_lines = {}
+            for _, l in ipairs(vim.split(input.content, "\n", { plain = true })) do
+              table.insert(diff_lines, "+ " .. l)
+            end
+          end
+          if diff_lines and #diff_lines > 0 then
+            ui.append_diff(sid, diff_lines)
+          end
         end
       end
     end
