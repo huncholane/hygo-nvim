@@ -342,15 +342,8 @@ function M.prompt_visual_chat()
     vim.notify("claude: empty selection", vim.log.levels.WARN)
     return
   end
-  local s = vim.fn.getpos("'<")
-  local e = vim.fn.getpos("'>")
-  local fname = vim.api.nvim_buf_get_name(origin_buf)
-  local rel = fname ~= "" and vim.fn.fnamemodify(fname, ":.") or "[No Name]"
   local ft = vim.bo[origin_buf].filetype or ""
-  local context = string.format(
-    "<context>\n%s:%d-%d\n```%s\n%s\n```\n</context>",
-    rel, s[2], e[2], ft, sel
-  )
+  local context = string.format("```%s\n%s\n```", ft, sel)
 
   if not M.is_open() then
     if panel.sid then
