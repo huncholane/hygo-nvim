@@ -43,6 +43,7 @@ local function compute_change(before, after)
   local hunks = {}
   if type(indices) == "table" then
     for _, h in ipairs(indices) do
+      local count_a = h[2]
       local start_b = h[3]
       local count_b = h[4]
       local s, e
@@ -53,7 +54,7 @@ local function compute_change(before, after)
         s = start_b
         e = start_b + count_b - 1
       end
-      table.insert(hunks, { start = s, finish = e })
+      table.insert(hunks, { start = s, finish = e, added = count_b, removed = count_a })
     end
   end
   if #hunks == 0 then return nil end

@@ -10,11 +10,19 @@ function M.set_qf_from_prompt(p)
   local items = {}
   for _, f in ipairs(p.files or {}) do
     for _, h in ipairs(f.hunks or {}) do
+      local added = h.added or 0
+      local removed = h.removed or 0
+      local stats
+      if added == 0 and removed == 0 then
+        stats = ""
+      else
+        stats = string.format("+%d -%d", added, removed)
+      end
       table.insert(items, {
         filename = f.path,
         lnum = h.start or 1,
         end_lnum = h.finish or h.start or 1,
-        text = snippet(p.text, 80),
+        text = stats,
       })
     end
   end
@@ -22,10 +30,9 @@ function M.set_qf_from_prompt(p)
     vim.notify("claude: prompt has no recorded changes", vim.log.levels.WARN)
     return
   end
-  vim.fn.setqflist({}, " ", {
-    title = "Claude: " .. snippet(p.text, 60),
-    items = items,
-  })
+  local title = (p.text or ""):gsub("%s+", " ")
+  table.insert(items, 1, { text = "▌ " .. title, valid = 0 })
+  vim.fn.setqflist({}, " ", { title = title, items = items })
   vim.cmd("copen")
   pcall(function() require("claude.highlights").refresh_all() end)
 end

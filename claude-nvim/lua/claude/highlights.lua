@@ -1,15 +1,12 @@
 local M = {}
 
 local ns = vim.api.nvim_create_namespace("claude_changes")
-local cfg = { highlight = true, blame = true }
+local cfg = { highlight = true }
 
 function M.setup(opts)
   cfg.highlight = opts.highlight ~= false
-  cfg.blame = opts.blame ~= false
 
   vim.api.nvim_set_hl(0, "ClaudeChange", { default = true, bg = "#3a2410" })
-  vim.api.nvim_set_hl(0, "ClaudeChangeSign", { default = true, fg = "#e07b00" })
-  vim.api.nvim_set_hl(0, "ClaudeBlame", { default = true, fg = "#7f5a2a", italic = true })
 
   vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "BufEnter" }, {
     callback = function(args)
@@ -49,7 +46,7 @@ end
 
 function M.apply_to_buf(buf)
   if not vim.api.nvim_buf_is_valid(buf) then return end
-  if not (cfg.highlight or cfg.blame) then return end
+  if not cfg.highlight then return end
   local name = vim.api.nvim_buf_get_name(buf)
   if name == "" then return end
   if vim.bo[buf].buftype ~= "" then return end
@@ -63,14 +60,9 @@ function M.apply_to_buf(buf)
     local e = math.min(lc - 1, (h.finish or h.start or 1) - 1)
     if e < s then e = s end
     for ln = s, e do
-      local opts = {}
-      if cfg.highlight then opts.line_hl_group = "ClaudeChange" end
-      if cfg.blame and ln == s then
-        local snippet = (h.prompt or ""):gsub("%s+", " "):sub(1, 80)
-        opts.virt_text = { { "  ▏ " .. snippet, "ClaudeBlame" } }
-        opts.virt_text_pos = "eol"
+      if cfg.highlight then
+        pcall(vim.api.nvim_buf_set_extmark, buf, ns, ln, 0, { line_hl_group = "ClaudeChange" })
       end
-      pcall(vim.api.nvim_buf_set_extmark, buf, ns, ln, 0, opts)
     end
   end
 end
