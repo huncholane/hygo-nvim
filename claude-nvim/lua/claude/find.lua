@@ -105,7 +105,7 @@ function M.find()
       vim.fn.setqflist({}, " ", { title = query, items = items })
       vim.cmd("copen")
       pcall(vim.cmd, "cc 2")
-      pcall(function() require("claude.highlights").refresh_all() end)
+      pcall(function() require("extensions.qf-line-highlights").refresh_all() end)
     end))
   end)
 end

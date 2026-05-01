@@ -2,7 +2,6 @@ local M = {}
 
 local ui = require("claude.ui")
 local runner = require("claude.runner")
-local highlights = require("claude.highlights")
 local pickers = require("claude.pickers")
 local edit = require("claude.edit")
 local timetravel = require("claude.timetravel")
@@ -15,10 +14,6 @@ local defaults = {
   width = 80,
   --- Add --dangerously-skip-permissions flag to all claude commands (default: false)
   skip_permissions = false,
-  --- Highlight claude-changed lines like gitsigns (default: true)
-  highlight = true,
-  --- Inline blame: show prompt text on changed lines (default: true)
-  blame = true,
   --- Write raw stream events + cmd + exit codes to <data>/claude-nvim/debug.log
   debug = false,
 }
@@ -29,7 +24,6 @@ function M.setup(opts)
   opts = vim.tbl_deep_extend("force", defaults, opts or {})
   ui.setup(opts)
   runner.setup(opts)
-  highlights.setup(opts)
   edit.setup(opts)
   commit.setup(opts)
   find.setup(opts)

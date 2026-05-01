@@ -96,7 +96,7 @@ local function flush_prompt(sid)
     table.insert(st.session.prompts, p)
     store.save(st.session)
     vim.schedule(function()
-      local ok_h, hl = pcall(require, "claude.highlights")
+      local ok_h, hl = pcall(require, "extensions.qf-line-highlights")
       if ok_h then hl.refresh_all() end
       local ok_t, tt = pcall(require, "claude.timetravel")
       if ok_t then tt.bump() end

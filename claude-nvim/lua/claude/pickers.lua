@@ -34,7 +34,7 @@ function M.set_qf_from_prompt(p)
   table.insert(items, 1, { text = "▌ " .. title, valid = 0 })
   vim.fn.setqflist({}, " ", { title = title, items = items })
   vim.cmd("copen")
-  pcall(function() require("claude.highlights").refresh_all() end)
+  pcall(function() require("extensions.qf-line-highlights").refresh_all() end)
 end
 
 function M.qf_last()
