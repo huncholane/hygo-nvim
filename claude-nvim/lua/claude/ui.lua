@@ -512,10 +512,16 @@ function M.append_assistant_text(sid, text)
   end)
 end
 
-function M.append_tool_use(sid, name, path)
+function M.append_tool_use(sid, name, summary)
   if sid ~= panel.sid then return end
   vim.schedule(function()
-    append_lines({ "", "> **" .. name .. "** `" .. path .. "`", "" })
+    local line
+    if summary and summary ~= "" then
+      line = "> **" .. name .. "** `" .. summary .. "`"
+    else
+      line = "> **" .. name .. "**"
+    end
+    append_lines({ "", line, "" })
     spinner_render()
   end)
 end

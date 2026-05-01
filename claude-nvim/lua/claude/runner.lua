@@ -134,7 +134,26 @@ local function handle_event(sid, evt)
           if path and FILE_TOOLS[block.name] then
             ensure_before(sid, path)
           end
-          ui.append_tool_use(sid, block.name or "tool", path or "")
+          local summary
+          local name = block.name or "tool"
+          if name == "Bash" then
+            summary = input.command or ""
+          elseif name == "Grep" or name == "Glob" then
+            summary = input.pattern or ""
+          elseif name == "Task" then
+            summary = input.description or ""
+          elseif name == "WebFetch" or name == "WebSearch" then
+            summary = input.url or input.query or ""
+          elseif name == "TodoWrite" then
+            summary = "(todos)"
+          elseif name == "Edit" or name == "MultiEdit" then
+            summary = path or input.file_path or ""
+          else
+            summary = path or input.file_path or input.command or input.pattern or input.query or ""
+          end
+          summary = (summary or ""):gsub("\n", " ")
+          if #summary > 200 then summary = summary:sub(1, 200) .. "…" end
+          ui.append_tool_use(sid, name, summary)
         end
       end
     end
