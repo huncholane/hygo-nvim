@@ -27,6 +27,7 @@ function M.set_qf_from_prompt(p)
     items = items,
   })
   vim.cmd("copen")
+  pcall(function() require("claude.highlights").refresh_all() end)
 end
 
 function M.qf_last()

@@ -1,6 +1,5 @@
 local M = {}
 
-local store = require("claude.store")
 local ns = vim.api.nvim_create_namespace("claude_changes")
 local cfg = { highlight = true, blame = true }
 
@@ -12,26 +11,36 @@ function M.setup(opts)
   vim.api.nvim_set_hl(0, "ClaudeChangeSign", { default = true, fg = "#e07b00" })
   vim.api.nvim_set_hl(0, "ClaudeBlame", { default = true, fg = "#7f5a2a", italic = true })
 
-  vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
+  vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "BufEnter" }, {
     callback = function(args)
       M.apply_to_buf(args.buf)
     end,
   })
+
+  vim.api.nvim_create_autocmd({ "QuickFixCmdPost" }, {
+    callback = function() M.refresh_all() end,
+  })
+end
+
+local function qf_item_path(item)
+  if item.filename and item.filename ~= "" then return item.filename end
+  if item.bufnr and item.bufnr > 0 and vim.api.nvim_buf_is_valid(item.bufnr) then
+    return vim.api.nvim_buf_get_name(item.bufnr)
+  end
+  return nil
 end
 
 local function collect_for_path(abs_path)
   local out = {}
-  for _, p in ipairs(store.all_prompts()) do
-    for _, f in ipairs(p.files or {}) do
-      if f.path == abs_path then
-        for _, h in ipairs(f.hunks or {}) do
-          table.insert(out, {
-            start = h.start,
-            finish = h.finish,
-            prompt = p.text or "",
-            ts = p.ts or 0,
-          })
-        end
+  local items = vim.fn.getqflist()
+  for _, item in ipairs(items) do
+    local fname = qf_item_path(item)
+    if fname and fname ~= "" then
+      local p = vim.fn.fnamemodify(fname, ":p")
+      if p == abs_path and item.lnum and item.lnum > 0 then
+        local s = item.lnum
+        local e = (item.end_lnum and item.end_lnum > 0) and item.end_lnum or s
+        table.insert(out, { start = s, finish = e, prompt = item.text or "" })
       end
     end
   end

@@ -9,53 +9,72 @@ local panel = {
 
 local spinner = {
   timer = nil,
-  line = nil,
   frame = 1,
   frames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+  active = false,
+  row = nil,
 }
 
-local function spinner_render()
-  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then return end
-  local txt = spinner.frames[spinner.frame] .. " thinking…"
-  vim.bo[panel.buf].modifiable = true
-  local appended = false
-  if spinner.line ~= nil and spinner.line < vim.api.nvim_buf_line_count(panel.buf) then
-    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.line, spinner.line + 1, false, { txt })
-  else
-    local lc = vim.api.nvim_buf_line_count(panel.buf)
-    pcall(vim.api.nvim_buf_set_lines, panel.buf, lc, lc, false, { txt })
-    spinner.line = lc
-    appended = true
-  end
-  vim.bo[panel.buf].modifiable = false
-  if appended and panel.win and vim.api.nvim_win_is_valid(panel.win) then
-    local lc = vim.api.nvim_buf_line_count(panel.buf)
-    pcall(vim.api.nvim_win_set_cursor, panel.win, { lc, 0 })
+local function spinner_text()
+  return spinner.frames[spinner.frame] .. " thinking…"
+end
+
+local function scroll_to_bottom_now()
+  if panel.win and vim.api.nvim_win_is_valid(panel.win) then
+    pcall(vim.api.nvim_win_call, panel.win, function()
+      vim.cmd("normal! G")
+    end)
   end
 end
 
+local function spinner_remove_if_present()
+  if spinner.row == nil then return end
+  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then
+    spinner.row = nil
+    return
+  end
+  local lc = vim.api.nvim_buf_line_count(panel.buf)
+  if spinner.row < lc then
+    vim.bo[panel.buf].modifiable = true
+    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.row, spinner.row + 1, false, {})
+    vim.bo[panel.buf].modifiable = false
+  end
+  spinner.row = nil
+end
+
+local function spinner_render()
+  if not spinner.active then return end
+  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then return end
+  vim.bo[panel.buf].modifiable = true
+  if spinner.row ~= nil and spinner.row < vim.api.nvim_buf_line_count(panel.buf) then
+    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.row, spinner.row + 1, false, { spinner_text() })
+  else
+    local lc = vim.api.nvim_buf_line_count(panel.buf)
+    pcall(vim.api.nvim_buf_set_lines, panel.buf, lc, lc, false, { spinner_text() })
+    spinner.row = lc
+  end
+  vim.bo[panel.buf].modifiable = false
+  scroll_to_bottom_now()
+end
+
 local function spinner_stop()
+  spinner.active = false
   if spinner.timer then
     spinner.timer:stop()
     if not spinner.timer:is_closing() then spinner.timer:close() end
     spinner.timer = nil
   end
-  if spinner.line ~= nil and panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
-    if spinner.line < vim.api.nvim_buf_line_count(panel.buf) then
-      vim.bo[panel.buf].modifiable = true
-      pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.line, spinner.line + 1, false, {})
-      vim.bo[panel.buf].modifiable = false
-    end
-  end
-  spinner.line = nil
+  spinner_remove_if_present()
 end
 
 local function spinner_start()
   spinner_stop()
+  spinner.active = true
   spinner.frame = 1
   spinner_render()
   spinner.timer = vim.uv.new_timer()
   spinner.timer:start(90, 90, vim.schedule_wrap(function()
+    if not spinner.active then return end
     spinner.frame = (spinner.frame % #spinner.frames) + 1
     spinner_render()
   end))
@@ -84,24 +103,24 @@ local function ensure_buf()
 end
 
 local function scroll_to_bottom()
-  if panel.win and vim.api.nvim_win_is_valid(panel.win) then
-    local lc = vim.api.nvim_buf_line_count(panel.buf)
-    pcall(vim.api.nvim_win_set_cursor, panel.win, { lc, 0 })
-  end
+  scroll_to_bottom_now()
 end
 
 local function append_lines(lines)
   local buf = panel.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+  spinner_remove_if_present()
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
   vim.bo[buf].modifiable = false
+  spinner_render()
   scroll_to_bottom()
 end
 
 local function append_text_streaming(text)
   local buf = panel.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+  spinner_remove_if_present()
   vim.bo[buf].modifiable = true
   local lc = vim.api.nvim_buf_line_count(buf)
   local last = vim.api.nvim_buf_get_lines(buf, lc - 1, lc, false)[1] or ""
@@ -109,12 +128,14 @@ local function append_text_streaming(text)
   parts[1] = last .. parts[1]
   vim.api.nvim_buf_set_lines(buf, lc - 1, lc, false, parts)
   vim.bo[buf].modifiable = false
+  spinner_render()
   scroll_to_bottom()
 end
 
 local function clear_buf()
   local buf = panel.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
+  spinner.row = nil
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
   vim.bo[buf].modifiable = false
@@ -479,22 +500,23 @@ function M.append_user_prompt(sid, text)
   table.insert(lines, "")
   append_lines(lines)
   spinner_start()
+  scroll_to_bottom()
   pcall(vim.cmd, "redraw!")
 end
 
 function M.append_assistant_text(sid, text)
   if sid ~= panel.sid then return end
   vim.schedule(function()
-    spinner_stop()
     append_text_streaming(text)
+    spinner_render()
   end)
 end
 
 function M.append_tool_use(sid, name, path)
   if sid ~= panel.sid then return end
   vim.schedule(function()
-    spinner_stop()
     append_lines({ "", "> **" .. name .. "** `" .. path .. "`", "" })
+    spinner_render()
   end)
 end
 
