@@ -118,6 +118,7 @@ easymap("n", "g;", "m'A;<esc>`'", "Append Colon")
 easymap("n", "g,", "m'A,<esc>`'", "Append Comma")
 easymap("n", "gl", "", "LSP")
 easymap("n", "glt", ":ToggleDiagnostics<cr>", "Toggle")
+vim.keymap.set("n", "gc", require("telescope.builtin").grep_string, { desc= "Telescope word"})
 
 -- ########################################################################## --
 -- Surroundings

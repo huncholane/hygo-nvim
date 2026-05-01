@@ -2,6 +2,7 @@ local M = {}
 
 local terminal = require("claude.terminal")
 local session = require("claude.session")
+local edit = require("claude.edit")
 
 ---@class ClaudeConfig
 local defaults = {
@@ -19,31 +20,17 @@ function M.setup(opts)
   opts = vim.tbl_deep_extend("force", defaults, opts or {})
   terminal.setup(opts)
   session.setup(opts)
+  edit.setup(opts)
 
   vim.keymap.set("n", "<leader>c", "", { desc = "Claude" })
 
   -- Toggle claude panel (resumes last session)
   vim.keymap.set("n", "<leader>ct", session.continue, { desc = "Claude: Toggle panel" })
 
-  -- Send visual selection to claude
-  vim.keymap.set("v", "<leader>cs", function()
-    -- Yank selection into register
-    local old_reg = vim.fn.getreg('"')
-    local old_regtype = vim.fn.getregtype('"')
-    vim.cmd('noautocmd normal! "vy')
-    local selection = vim.fn.getreg("v")
-    vim.fn.setreg('"', old_reg, old_regtype)
-
-    if not terminal.is_open() then
-      session.continue()
-      -- Wait for terminal to be ready
-      vim.defer_fn(function()
-        terminal.send(selection .. "\n")
-      end, 500)
-    else
-      terminal.send(selection .. "\n")
-    end
-  end, { desc = "Claude: Send selection" })
+  -- Visual <leader>c → prompt popup that edits selection in place via claude -p
+  vim.keymap.set("v", "<leader>c", function()
+    edit.prompt_visual()
+  end, { desc = "Claude: Edit selection with prompt" })
 
   -- Send current buffer to claude
   vim.keymap.set("n", "<leader>cb", function()
