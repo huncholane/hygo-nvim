@@ -141,6 +141,10 @@ M.setup = function(opts)
   M.register_keymap("c", ":Gitsigns setqflist<cr>", "Quickfix Current Buffer Hunks")
   M.register_keymap("a", ":Git add -A<cr>", "Add All Files")
   M.register_keymap("p", ":Git push<cr>", "Push")
+  M.register_keymap("x", function()
+    vim.fn.system("git add -A")
+    require("claude.commit").commit()
+  end, "Add All + Claude Commit")
 
   -- Jump maps
   vim.keymap.set("n", "]h", ":Gitsigns next_hunk<cr>", { desc = "Next Hunk" })
