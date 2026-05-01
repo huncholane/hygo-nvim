@@ -5,6 +5,7 @@ local runner = require("claude.runner")
 local highlights = require("claude.highlights")
 local pickers = require("claude.pickers")
 local edit = require("claude.edit")
+local timetravel = require("claude.timetravel")
 
 ---@class ClaudeConfig
 local defaults = {
@@ -33,6 +34,8 @@ function M.setup(opts)
 
   vim.keymap.set("n", "<leader>cc", ui.cancel_current, { desc = "Claude: Cancel current prompt" })
   vim.keymap.set("n", "<leader>ci", edit.prompt_insert, { desc = "Claude: Insert at cursor with prompt" })
+  vim.keymap.set("n", "<leader>cu", timetravel.undo, { desc = "Claude: Undo last claude change" })
+  vim.keymap.set("n", "<leader>cU", timetravel.redo, { desc = "Claude: Redo claude change" })
   vim.keymap.set("n", "<leader>ct", ui.toggle, { desc = "Claude: Toggle panel" })
   vim.keymap.set("n", "<leader>cn", ui.start_new, { desc = "Claude: New session" })
   vim.keymap.set("n", "<leader>cr", ui.resume_last, { desc = "Claude: Resume last session" })

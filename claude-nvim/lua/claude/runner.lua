@@ -79,7 +79,13 @@ local function flush_prompt(sid)
     local after = read_file(path)
     local hunks, unified = compute_change(before, after)
     if hunks then
-      table.insert(files, { path = path, hunks = hunks, diff = unified })
+      table.insert(files, {
+        path = path,
+        hunks = hunks,
+        diff = unified,
+        before_content = before,
+        after_content = after,
+      })
     end
   end
   st.current_prompt = nil
@@ -92,6 +98,8 @@ local function flush_prompt(sid)
     vim.schedule(function()
       local ok_h, hl = pcall(require, "claude.highlights")
       if ok_h then hl.refresh_all() end
+      local ok_t, tt = pcall(require, "claude.timetravel")
+      if ok_t then tt.bump() end
     end)
   end
 
