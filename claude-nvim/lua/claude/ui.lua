@@ -364,6 +364,20 @@ function M.resume_session(claude_id)
   append_lines({ "Press `i` to send a prompt.", "" })
 end
 
+local prompt_buf = nil
+local prompt_keymaps_set = false
+
+local function ensure_prompt_buf()
+  if prompt_buf and vim.api.nvim_buf_is_valid(prompt_buf) then
+    return prompt_buf
+  end
+  prompt_buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[prompt_buf].bufhidden = "hide"
+  vim.bo[prompt_buf].filetype = "markdown"
+  prompt_keymaps_set = false
+  return prompt_buf
+end
+
 function M.open_input(opts)
   opts = opts or {}
   if not panel.sid then
@@ -372,9 +386,7 @@ function M.open_input(opts)
   local sid = panel.sid
   local return_to = opts.return_to
   local context = opts.context
-  local input_buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[input_buf].bufhidden = "wipe"
-  vim.bo[input_buf].filetype = "markdown"
+  local input_buf = ensure_prompt_buf()
 
   local width = math.min(80, math.max(40, math.floor(vim.o.columns * 0.6)))
   local height = 8
@@ -390,15 +402,19 @@ function M.open_input(opts)
       or " Claude prompt — <C-s> send  <C-c> cancel ",
     title_pos = "center",
   })
-  vim.cmd("startinsert")
+  -- Place cursor at end of existing text so user can keep typing
+  local lc = vim.api.nvim_buf_line_count(input_buf)
+  local last = vim.api.nvim_buf_get_lines(input_buf, lc - 1, lc, false)[1] or ""
+  pcall(vim.api.nvim_win_set_cursor, win, { lc, #last })
+  vim.cmd("startinsert!")
 
   local closed = false
-  local function close()
+  local function close_keep()
     if closed then return end
     closed = true
     pcall(vim.cmd, "stopinsert")
     if vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_win_close(win, true)
+      vim.api.nvim_win_close(win, false)
     end
     if return_to and vim.api.nvim_win_is_valid(return_to) then
       pcall(vim.api.nvim_set_current_win, return_to)
@@ -408,23 +424,38 @@ function M.open_input(opts)
     if closed then return end
     local lines = vim.api.nvim_buf_get_lines(input_buf, 0, -1, false)
     local text = table.concat(lines, "\n")
-    if text:match("^%s*$") then close(); return end
-    if context and context ~= "" then
-      text = context .. "\n\n" .. text
+    if text:match("^%s*$") then close_keep(); return end
+    -- clear the persistent prompt buffer since prompt was sent
+    if vim.api.nvim_buf_is_valid(input_buf) then
+      vim.api.nvim_buf_set_lines(input_buf, 0, -1, false, {})
     end
-    M.append_user_prompt(sid, text)
-    close()
+    local final_text = text
+    if context and context ~= "" then
+      final_text = context .. "\n\n" .. text
+    end
+    M.append_user_prompt(sid, final_text)
+    close_keep()
     local runner = require("claude.runner")
-    local ok, err = runner.send(sid, text, { skip_ui_prompt = true })
+    local ok, err = runner.send(sid, final_text, { skip_ui_prompt = true })
     if not ok then
       vim.notify("claude: " .. tostring(err), vim.log.levels.WARN)
     end
   end
-  local km = { buffer = input_buf, nowait = true, silent = true }
-  vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
-  vim.keymap.set({ "n", "i" }, "<C-c>", close, km)
-  vim.keymap.set("n", "q", close, km)
-  vim.keymap.set("n", "<Esc>", close, km)
+  if not prompt_keymaps_set then
+    local km = { buffer = input_buf, nowait = true, silent = true }
+    vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
+    vim.keymap.set({ "n", "i" }, "<C-c>", close_keep, km)
+    vim.keymap.set("n", "q", close_keep, km)
+    vim.keymap.set("n", "<Esc>", close_keep, km)
+    prompt_keymaps_set = true
+  else
+    -- rebind send/close so they reference current win/sid/context closures
+    local km = { buffer = input_buf, nowait = true, silent = true }
+    vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
+    vim.keymap.set({ "n", "i" }, "<C-c>", close_keep, km)
+    vim.keymap.set("n", "q", close_keep, km)
+    vim.keymap.set("n", "<Esc>", close_keep, km)
+  end
 end
 
 local function capture_visual_selection(bufnr)
