@@ -275,10 +275,11 @@ function M.attach_existing(session)
   return session.id
 end
 
-function M.resume_from_pointer()
-  local ptr = store.read_pointer()
+function M.resume_from_pointer(cwd)
+  cwd = cwd or vim.fn.getcwd()
+  local ptr = store.read_pointer(cwd)
   if not ptr then return nil end
-  local existing = ptr.session_id and store.load(ptr.session_id) or nil
+  local existing = ptr.session_id and store.load(ptr.session_id, cwd) or nil
   if existing then
     return M.attach_existing(existing)
   end
@@ -324,6 +325,7 @@ function M.send(sid, prompt_text, opts)
   log("CMD", table.concat(cmd, " | "))
 
   st.job = vim.fn.jobstart(cmd, {
+    cwd = st.session.cwd,
     stdout_buffered = false,
     on_stdout = function(_, data) on_stdout(sid, data) end,
     on_stderr = function(_, data)

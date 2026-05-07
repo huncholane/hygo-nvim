@@ -1,96 +1,122 @@
 local M = {}
 
-local panel = {
-  buf = nil,
-  win = nil,
-  sid = nil,
-  width = 80,
-}
+local default_width = 80
 
-local spinner = {
-  timer = nil,
-  frame = 1,
-  frames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
-  active = false,
-  row = nil,
-}
+-- panels keyed by tabpage handle
+local panels = {}
 
-local function spinner_text()
-  return spinner.frames[spinner.frame] .. " thinking…"
+local SPINNER_FRAMES = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+
+local function new_panel(tab)
+  return {
+    tab = tab,
+    buf = nil,
+    win = nil,
+    sid = nil,
+    width = default_width,
+    spinner = {
+      timer = nil,
+      frame = 1,
+      active = false,
+      row = nil,
+    },
+  }
 end
 
-local function scroll_to_bottom_now()
-  if panel.win and vim.api.nvim_win_is_valid(panel.win) then
-    pcall(vim.api.nvim_win_call, panel.win, function()
+local function get_panel()
+  local tab = vim.api.nvim_get_current_tabpage()
+  local p = panels[tab]
+  if not p then
+    p = new_panel(tab)
+    panels[tab] = p
+  end
+  return p
+end
+
+local function find_panel_by_sid(sid)
+  if not sid then return nil end
+  for _, p in pairs(panels) do
+    if p.sid == sid then return p end
+  end
+  return nil
+end
+
+local function spinner_text(p)
+  return SPINNER_FRAMES[p.spinner.frame] .. " thinking…"
+end
+
+local function scroll_to_bottom_now(p)
+  if p.win and vim.api.nvim_win_is_valid(p.win) then
+    pcall(vim.api.nvim_win_call, p.win, function()
       vim.cmd("normal! G")
     end)
   end
 end
 
-local function spinner_remove_if_present()
-  if spinner.row == nil then return end
-  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then
-    spinner.row = nil
+local function spinner_remove_if_present(p)
+  if p.spinner.row == nil then return end
+  if not p.buf or not vim.api.nvim_buf_is_valid(p.buf) then
+    p.spinner.row = nil
     return
   end
-  local lc = vim.api.nvim_buf_line_count(panel.buf)
-  if spinner.row < lc then
-    vim.bo[panel.buf].modifiable = true
-    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.row, spinner.row + 1, false, {})
-    vim.bo[panel.buf].modifiable = false
+  local lc = vim.api.nvim_buf_line_count(p.buf)
+  if p.spinner.row < lc then
+    vim.bo[p.buf].modifiable = true
+    pcall(vim.api.nvim_buf_set_lines, p.buf, p.spinner.row, p.spinner.row + 1, false, {})
+    vim.bo[p.buf].modifiable = false
   end
-  spinner.row = nil
+  p.spinner.row = nil
 end
 
-local function spinner_render()
-  if not spinner.active then return end
-  if not panel.buf or not vim.api.nvim_buf_is_valid(panel.buf) then return end
-  vim.bo[panel.buf].modifiable = true
-  if spinner.row ~= nil and spinner.row < vim.api.nvim_buf_line_count(panel.buf) then
-    pcall(vim.api.nvim_buf_set_lines, panel.buf, spinner.row, spinner.row + 1, false, { spinner_text() })
+local function spinner_render(p)
+  if not p.spinner.active then return end
+  if not p.buf or not vim.api.nvim_buf_is_valid(p.buf) then return end
+  vim.bo[p.buf].modifiable = true
+  if p.spinner.row ~= nil and p.spinner.row < vim.api.nvim_buf_line_count(p.buf) then
+    pcall(vim.api.nvim_buf_set_lines, p.buf, p.spinner.row, p.spinner.row + 1, false, { spinner_text(p) })
   else
-    local lc = vim.api.nvim_buf_line_count(panel.buf)
-    pcall(vim.api.nvim_buf_set_lines, panel.buf, lc, lc, false, { spinner_text() })
-    spinner.row = lc
+    local lc = vim.api.nvim_buf_line_count(p.buf)
+    pcall(vim.api.nvim_buf_set_lines, p.buf, lc, lc, false, { spinner_text(p) })
+    p.spinner.row = lc
   end
-  vim.bo[panel.buf].modifiable = false
-  scroll_to_bottom_now()
+  vim.bo[p.buf].modifiable = false
+  scroll_to_bottom_now(p)
 end
 
-local function spinner_stop()
-  spinner.active = false
-  if spinner.timer then
-    spinner.timer:stop()
-    if not spinner.timer:is_closing() then spinner.timer:close() end
-    spinner.timer = nil
+local function spinner_stop(p)
+  p.spinner.active = false
+  if p.spinner.timer then
+    p.spinner.timer:stop()
+    if not p.spinner.timer:is_closing() then p.spinner.timer:close() end
+    p.spinner.timer = nil
   end
-  spinner_remove_if_present()
+  spinner_remove_if_present(p)
 end
 
-local function spinner_start()
-  spinner_stop()
-  spinner.active = true
-  spinner.frame = 1
-  spinner_render()
-  spinner.timer = vim.uv.new_timer()
-  spinner.timer:start(90, 90, vim.schedule_wrap(function()
-    if not spinner.active then return end
-    spinner.frame = (spinner.frame % #spinner.frames) + 1
-    spinner_render()
+local function spinner_start(p)
+  spinner_stop(p)
+  p.spinner.active = true
+  p.spinner.frame = 1
+  spinner_render(p)
+  p.spinner.timer = vim.uv.new_timer()
+  p.spinner.timer:start(90, 90, vim.schedule_wrap(function()
+    if not p.spinner.active then return end
+    p.spinner.frame = (p.spinner.frame % #SPINNER_FRAMES) + 1
+    spinner_render(p)
   end))
 end
 
-local function ensure_buf()
-  if panel.buf and vim.api.nvim_buf_is_valid(panel.buf) then
-    return panel.buf
+local function ensure_buf(p)
+  if p.buf and vim.api.nvim_buf_is_valid(p.buf) then
+    return p.buf
   end
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].swapfile = false
   vim.bo[buf].filetype = "markdown"
   vim.bo[buf].buflisted = false
-  pcall(vim.api.nvim_buf_set_name, buf, "claude://panel")
-  panel.buf = buf
+  pcall(vim.api.nvim_buf_set_name, buf, "claude://panel/" .. tostring(p.tab))
+  p.buf = buf
 
   local function open_input() M.open_input() end
   vim.keymap.set("n", "i", open_input, { buffer = buf, desc = "Claude: prompt" })
@@ -102,25 +128,21 @@ local function ensure_buf()
   return buf
 end
 
-local function scroll_to_bottom()
-  scroll_to_bottom_now()
-end
-
-local function append_lines(lines)
-  local buf = panel.buf
+local function append_lines(p, lines)
+  local buf = p.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
-  spinner_remove_if_present()
+  spinner_remove_if_present(p)
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
   vim.bo[buf].modifiable = false
-  spinner_render()
-  scroll_to_bottom()
+  spinner_render(p)
+  scroll_to_bottom_now(p)
 end
 
-local function append_text_streaming(text)
-  local buf = panel.buf
+local function append_text_streaming(p, text)
+  local buf = p.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
-  spinner_remove_if_present()
+  spinner_remove_if_present(p)
   vim.bo[buf].modifiable = true
   local lc = vim.api.nvim_buf_line_count(buf)
   local last = vim.api.nvim_buf_get_lines(buf, lc - 1, lc, false)[1] or ""
@@ -128,56 +150,72 @@ local function append_text_streaming(text)
   parts[1] = last .. parts[1]
   vim.api.nvim_buf_set_lines(buf, lc - 1, lc, false, parts)
   vim.bo[buf].modifiable = false
-  spinner_render()
-  scroll_to_bottom()
+  spinner_render(p)
+  scroll_to_bottom_now(p)
 end
 
-local function clear_buf()
-  local buf = panel.buf
+local function clear_buf(p)
+  local buf = p.buf
   if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
-  spinner.row = nil
+  p.spinner.row = nil
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
   vim.bo[buf].modifiable = false
 end
 
 function M.setup(opts)
-  panel.width = opts.width or 80
+  default_width = opts.width or 80
+
+  vim.api.nvim_create_autocmd("TabClosed", {
+    callback = function(ev)
+      local tabnr = tonumber(ev.file)
+      if not tabnr then return end
+      for tab, _ in pairs(panels) do
+        if not vim.api.nvim_tabpage_is_valid(tab) then
+          panels[tab] = nil
+        end
+      end
+    end,
+  })
 end
 
 function M.open_panel()
-  local buf = ensure_buf()
-  if panel.win and vim.api.nvim_win_is_valid(panel.win) then
-    vim.api.nvim_set_current_win(panel.win)
+  local p = get_panel()
+  local buf = ensure_buf(p)
+  if p.win and vim.api.nvim_win_is_valid(p.win) then
+    vim.api.nvim_set_current_win(p.win)
     return
   end
   vim.cmd("botright vsplit")
-  panel.win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(panel.win, buf)
-  vim.api.nvim_win_set_width(panel.win, panel.width)
-  vim.wo[panel.win].wrap = true
-  vim.wo[panel.win].linebreak = true
-  vim.wo[panel.win].number = false
-  vim.wo[panel.win].relativenumber = false
-  scroll_to_bottom()
+  p.win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(p.win, buf)
+  vim.api.nvim_win_set_width(p.win, p.width)
+  vim.wo[p.win].wrap = true
+  vim.wo[p.win].linebreak = true
+  vim.wo[p.win].number = false
+  vim.wo[p.win].relativenumber = false
+  scroll_to_bottom_now(p)
 end
 
 function M.close()
-  if panel.win and vim.api.nvim_win_is_valid(panel.win) then
-    vim.api.nvim_win_hide(panel.win)
-    panel.win = nil
+  local p = get_panel()
+  if p.win and vim.api.nvim_win_is_valid(p.win) then
+    vim.api.nvim_win_hide(p.win)
+    p.win = nil
   end
 end
 
 function M.is_open()
-  return panel.win and vim.api.nvim_win_is_valid(panel.win)
+  local p = get_panel()
+  return p.win and vim.api.nvim_win_is_valid(p.win)
 end
 
 function M.toggle()
+  local p = get_panel()
   if M.is_open() then
     M.close()
   else
-    if not panel.sid then
+    if not p.sid then
       M.start_new()
     else
       M.open_panel()
@@ -186,12 +224,13 @@ function M.toggle()
 end
 
 function M.start_new()
+  local p = get_panel()
   local runner = require("claude.runner")
   local sid = runner.start_session()
-  panel.sid = sid
-  clear_buf()
+  p.sid = sid
+  clear_buf(p)
   M.open_panel()
-  append_lines({
+  append_lines(p, {
     "# Claude — new session",
     "_id: " .. sid:sub(1, 8) .. "_",
     "",
@@ -200,16 +239,16 @@ function M.start_new()
   })
 end
 
-local function claude_jsonl_path(claude_id)
+local function claude_jsonl_path(claude_id, cwd)
   if not claude_id then return nil end
-  local cwd = vim.fn.getcwd()
+  cwd = cwd or vim.fn.getcwd()
   local enc = cwd:gsub("[/%.]", "-")
   local home = vim.uv.os_homedir() or os.getenv("HOME") or ""
   return home .. "/.claude/projects/" .. enc .. "/" .. claude_id .. ".jsonl"
 end
 
-local function replay_history(claude_id)
-  local path = claude_jsonl_path(claude_id)
+local function replay_history(p, claude_id, cwd)
+  local path = claude_jsonl_path(claude_id, cwd)
   if not path then return false end
   local f = io.open(path, "r")
   if not f then return false end
@@ -232,11 +271,11 @@ local function replay_history(claude_id)
           text = table.concat(parts, "\n")
         end
         if text and text ~= "" and not text:match("^<") then
-          append_lines({ "## You", "" })
+          append_lines(p, { "## You", "" })
           for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
-            append_lines({ l })
+            append_lines(p, { l })
           end
-          append_lines({ "" })
+          append_lines(p, { "" })
           turns = turns + 1
         end
       elseif msg.role == "assistant" and type(msg.content) == "table" then
@@ -247,22 +286,22 @@ local function replay_history(claude_id)
             if b.type == "text" and b.text then
               table.insert(parts, b.text)
             elseif b.type == "tool_use" then
-              local p = (b.input and b.input.file_path) or ""
-              table.insert(tools, "> **" .. (b.name or "tool") .. "** `" .. p .. "`")
+              local fp = (b.input and b.input.file_path) or ""
+              table.insert(tools, "> **" .. (b.name or "tool") .. "** `" .. fp .. "`")
             end
           end
         end
         if #parts > 0 or #tools > 0 then
-          append_lines({ "## Claude", "" })
+          append_lines(p, { "## Claude", "" })
           for _, t in ipairs(parts) do
             for _, l in ipairs(vim.split(t, "\n", { plain = true })) do
-              append_lines({ l })
+              append_lines(p, { l })
             end
           end
           for _, t in ipairs(tools) do
-            append_lines({ "", t })
+            append_lines(p, { "", t })
           end
-          append_lines({ "", "---", "" })
+          append_lines(p, { "", "---", "" })
         end
       end
     end
@@ -276,11 +315,12 @@ function M.resume_session(claude_id)
     vim.notify("claude: missing claude_id", vim.log.levels.WARN)
     return
   end
+  local p = get_panel()
   local runner = require("claude.runner")
   local store = require("claude.store")
-  -- find existing session.json with this claude_id, else build thin session
+  local cwd = vim.fn.getcwd()
   local session
-  for _, entry in ipairs(store.list_sessions()) do
+  for _, entry in ipairs(store.list_sessions(cwd)) do
     local s = store.load_path(entry.path)
     if s and s.claude_id == claude_id then session = s break end
   end
@@ -288,80 +328,51 @@ function M.resume_session(claude_id)
     session = {
       id = store.uuid(),
       started_at = os.time(),
-      cwd = vim.fn.getcwd(),
+      cwd = cwd,
       claude_id = claude_id,
       prompts = {},
     }
   end
   local sid = runner.attach_existing(session)
-  panel.sid = sid
+  p.sid = sid
   store.write_pointer({ session_id = session.id, claude_id = claude_id, ts = os.time(), cwd = session.cwd })
-  clear_buf()
+  clear_buf(p)
   M.open_panel()
-  append_lines({
+  append_lines(p, {
     "# Claude — resumed",
     "_id: " .. sid:sub(1, 8) .. "  ←  " .. claude_id:sub(1, 8) .. "_",
     "",
   })
-  local replayed = replay_history(claude_id)
+  local replayed = replay_history(p, claude_id, session.cwd)
   if not replayed then
-    append_lines({ "_(no prior transcript found on disk)_", "" })
+    append_lines(p, { "_(no prior transcript found on disk)_", "" })
   end
-  append_lines({ "Press `i` to send a prompt.", "" })
+  append_lines(p, { "Press `i` to send a prompt.", "" })
 end
 
 function M.resume_last()
+  local p = get_panel()
   local runner = require("claude.runner")
-  local sid = runner.resume_from_pointer()
+  local sid = runner.resume_from_pointer(vim.fn.getcwd())
   if not sid then
     vim.notify("claude: no previous session to resume", vim.log.levels.WARN)
     M.start_new()
     return
   end
-  panel.sid = sid
-  clear_buf()
+  p.sid = sid
+  clear_buf(p)
   M.open_panel()
   local session = runner.get_session(sid)
-  append_lines({
+  append_lines(p, {
     "# Claude — resumed",
     "_id: " .. sid:sub(1, 8) .. (session.claude_id and ("  ←  " .. session.claude_id:sub(1, 8)) or "") .. "_",
     "",
   })
-  local replayed = replay_history(session.claude_id)
+  local replayed = replay_history(p, session.claude_id, session.cwd)
   if not replayed then
-    append_lines({ "_(no prior transcript found on disk)_", "" })
+    append_lines(p, { "_(no prior transcript found on disk)_", "" })
   end
-  append_lines({ "Press `i` to send a prompt.", "" })
-end
-
-function M.resume_session(claude_id)
-  if not claude_id or claude_id == "" then
-    vim.notify("claude: missing session id", vim.log.levels.WARN)
-    return
-  end
-  local runner = require("claude.runner")
-  local store = require("claude.store")
-  local session = {
-    id = store.uuid(),
-    started_at = os.time(),
-    cwd = vim.fn.getcwd(),
-    claude_id = claude_id,
-    prompts = {},
-  }
-  local sid = runner.attach_existing(session)
-  panel.sid = sid
-  clear_buf()
-  M.open_panel()
-  append_lines({
-    "# Claude — resumed",
-    "_id: " .. sid:sub(1, 8) .. "  ←  " .. claude_id:sub(1, 8) .. "_",
-    "",
-  })
-  local replayed = replay_history(claude_id)
-  if not replayed then
-    append_lines({ "_(no prior transcript found on disk)_", "" })
-  end
-  append_lines({ "Press `i` to send a prompt.", "" })
+  append_lines(p, { "Press `i` to send a prompt.", "" })
 end
 
 local prompt_buf = nil
@@ -380,10 +391,11 @@ end
 
 function M.open_input(opts)
   opts = opts or {}
-  if not panel.sid then
+  local p = get_panel()
+  if not p.sid then
     M.start_new()
   end
-  local sid = panel.sid
+  local sid = p.sid
   local return_to = opts.return_to
   local context = opts.context
   local input_buf = ensure_prompt_buf()
@@ -402,7 +414,6 @@ function M.open_input(opts)
       or " Claude prompt — <C-s> send  <C-c> cancel ",
     title_pos = "center",
   })
-  -- Place cursor at end of existing text so user can keep typing
   local lc = vim.api.nvim_buf_line_count(input_buf)
   local last = vim.api.nvim_buf_get_lines(input_buf, lc - 1, lc, false)[1] or ""
   pcall(vim.api.nvim_win_set_cursor, win, { lc, #last })
@@ -425,7 +436,6 @@ function M.open_input(opts)
     local lines = vim.api.nvim_buf_get_lines(input_buf, 0, -1, false)
     local text = table.concat(lines, "\n")
     if text:match("^%s*$") then close_keep(); return end
-    -- clear the persistent prompt buffer since prompt was sent
     if vim.api.nvim_buf_is_valid(input_buf) then
       vim.api.nvim_buf_set_lines(input_buf, 0, -1, false, {})
     end
@@ -441,21 +451,12 @@ function M.open_input(opts)
       vim.notify("claude: " .. tostring(err), vim.log.levels.WARN)
     end
   end
-  if not prompt_keymaps_set then
-    local km = { buffer = input_buf, nowait = true, silent = true }
-    vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
-    vim.keymap.set({ "n", "i" }, "<C-c>", close_keep, km)
-    vim.keymap.set("n", "q", close_keep, km)
-    vim.keymap.set("n", "<Esc>", close_keep, km)
-    prompt_keymaps_set = true
-  else
-    -- rebind send/close so they reference current win/sid/context closures
-    local km = { buffer = input_buf, nowait = true, silent = true }
-    vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
-    vim.keymap.set({ "n", "i" }, "<C-c>", close_keep, km)
-    vim.keymap.set("n", "q", close_keep, km)
-    vim.keymap.set("n", "<Esc>", close_keep, km)
-  end
+  local km = { buffer = input_buf, nowait = true, silent = true }
+  vim.keymap.set({ "n", "i" }, "<C-s>", send, km)
+  vim.keymap.set({ "n", "i" }, "<C-c>", close_keep, km)
+  vim.keymap.set("n", "q", close_keep, km)
+  vim.keymap.set("n", "<Esc>", close_keep, km)
+  prompt_keymaps_set = true
 end
 
 local function capture_visual_selection(bufnr)
@@ -491,8 +492,9 @@ function M.prompt_visual_chat()
   local ft = vim.bo[origin_buf].filetype or ""
   local context = string.format("```%s\n%s\n```", ft, sel)
 
+  local p = get_panel()
   if not M.is_open() then
-    if panel.sid then
+    if p.sid then
       M.open_panel()
     else
       M.start_new()
@@ -503,25 +505,22 @@ end
 
 function M.open_prompt_keep_focus()
   local origin = vim.api.nvim_get_current_win()
+  local p = get_panel()
   if not M.is_open() then
-    if panel.sid then
+    if p.sid then
       M.open_panel()
     else
-      local store = require("claude.store")
-      if store.read_pointer() then
-        M.resume_last()
-      else
-        M.start_new()
-      end
+      M.start_new()
     end
   end
   M.open_input({ return_to = origin })
 end
 
--- runner callbacks
+-- runner callbacks (resolve panel by sid)
 
 function M.append_user_prompt(sid, text)
-  if sid ~= panel.sid then return end
+  local p = find_panel_by_sid(sid)
+  if not p then return end
   local lines = { "## You", "" }
   for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
     table.insert(lines, l)
@@ -529,28 +528,30 @@ function M.append_user_prompt(sid, text)
   table.insert(lines, "")
   table.insert(lines, "## Claude")
   table.insert(lines, "")
-  append_lines(lines)
-  spinner_start()
-  scroll_to_bottom()
+  append_lines(p, lines)
+  spinner_start(p)
+  scroll_to_bottom_now(p)
   pcall(vim.cmd, "redraw!")
 end
 
 function M.append_assistant_text(sid, text)
-  if sid ~= panel.sid then return end
   vim.schedule(function()
-    append_text_streaming(text)
-    spinner_render()
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    append_text_streaming(p, text)
+    spinner_render(p)
   end)
 end
 
 local ns_diff = vim.api.nvim_create_namespace("claude_panel_diff")
 
 function M.append_diff(sid, lines)
-  if sid ~= panel.sid then return end
   vim.schedule(function()
-    local buf = panel.buf
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    local buf = p.buf
     if not buf or not vim.api.nvim_buf_is_valid(buf) then return end
-    spinner_remove_if_present()
+    spinner_remove_if_present(p)
     vim.bo[buf].modifiable = true
     local start_row = vim.api.nvim_buf_line_count(buf)
     vim.api.nvim_buf_set_lines(buf, start_row, start_row, false, lines)
@@ -567,44 +568,48 @@ function M.append_diff(sid, lines)
         pcall(vim.api.nvim_buf_set_extmark, buf, ns_diff, row, 0, { line_hl_group = hl })
       end
     end
-    spinner_render()
-    scroll_to_bottom_now()
+    spinner_render(p)
+    scroll_to_bottom_now(p)
   end)
 end
 
 function M.append_tool_use(sid, name, summary)
-  if sid ~= panel.sid then return end
   vim.schedule(function()
+    local p = find_panel_by_sid(sid)
+    if not p then return end
     local line
     if summary and summary ~= "" then
       line = "> **" .. name .. "** `" .. summary .. "`"
     else
       line = "> **" .. name .. "**"
     end
-    append_lines({ "", line, "" })
-    spinner_render()
+    append_lines(p, { "", line, "" })
+    spinner_render(p)
   end)
 end
 
 function M.append_separator(sid)
-  if sid ~= panel.sid then return end
   vim.schedule(function()
-    spinner_stop()
-    append_lines({ "", "---", "" })
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    spinner_stop(p)
+    append_lines(p, { "", "---", "" })
   end)
 end
 
 function M.append_cancelled(sid)
-  if sid ~= panel.sid then return end
   vim.schedule(function()
-    spinner_stop()
-    append_lines({ "", "_— cancelled —_", "", "---", "" })
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    spinner_stop(p)
+    append_lines(p, { "", "_— cancelled —_", "", "---", "" })
   end)
 end
 
 function M.cancel_current()
+  local p = get_panel()
   local runner = require("claude.runner")
-  local sid = panel.sid
+  local sid = p.sid
   if not sid then
     vim.notify("claude: no active session", vim.log.levels.WARN)
     return
@@ -615,22 +620,26 @@ function M.cancel_current()
 end
 
 function M.append_stderr(sid, line)
-  if sid ~= panel.sid then return end
-  vim.schedule(function() append_lines({ "_stderr: " .. line .. "_" }) end)
+  vim.schedule(function()
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    append_lines(p, { "_stderr: " .. line .. "_" })
+  end)
 end
 
 function M.on_prompt_complete(sid, prompt, had_changes)
-  if sid ~= panel.sid then return end
-  vim.schedule(function() spinner_stop() end)
-  if had_changes then
-    vim.schedule(function()
-      append_lines({ "_recorded — " .. #(prompt.files or {}) .. " file(s) changed_", "" })
-    end)
-  end
+  vim.schedule(function()
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    spinner_stop(p)
+    if had_changes then
+      append_lines(p, { "_recorded — " .. #(prompt.files or {}) .. " file(s) changed_", "" })
+    end
+  end)
 end
 
 function M.current_sid()
-  return panel.sid
+  return get_panel().sid
 end
 
 return M
