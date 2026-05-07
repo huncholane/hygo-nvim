@@ -5,6 +5,9 @@ local default_width = 80
 -- panels keyed by tabpage handle
 local panels = {}
 
+-- forward declarations
+local ensure_panel_for_current_tab
+
 local SPINNER_FRAMES = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 
 local function new_panel(tab)
@@ -14,6 +17,7 @@ local function new_panel(tab)
     win = nil,
     sid = nil,
     width = default_width,
+    autoscroll = true,
     spinner = {
       timer = nil,
       frame = 1,
@@ -46,11 +50,23 @@ local function spinner_text(p)
 end
 
 local function scroll_to_bottom_now(p)
+  if not p.autoscroll then return end
   if p.win and vim.api.nvim_win_is_valid(p.win) then
     pcall(vim.api.nvim_win_call, p.win, function()
       vim.cmd("normal! G")
     end)
   end
+end
+
+local function update_autoscroll_from_view(p)
+  if not p.win or not vim.api.nvim_win_is_valid(p.win) then return end
+  if not p.buf or not vim.api.nvim_buf_is_valid(p.buf) then return end
+  local info = vim.fn.getwininfo(p.win)[1]
+  if not info then return end
+  local lc = vim.api.nvim_buf_line_count(p.buf)
+  -- treat "near bottom" (within 1 line) as still autoscrolling, so the
+  -- spinner row toggling does not yank the flag off.
+  p.autoscroll = (info.botline >= lc - 1)
 end
 
 local function spinner_remove_if_present(p)
@@ -194,6 +210,17 @@ function M.open_panel()
   vim.wo[p.win].linebreak = true
   vim.wo[p.win].number = false
   vim.wo[p.win].relativenumber = false
+  p.autoscroll = true
+
+  vim.api.nvim_create_autocmd("WinScrolled", {
+    group = vim.api.nvim_create_augroup("ClaudePanelScroll_" .. p.tab, { clear = true }),
+    callback = function(args)
+      local wid = tonumber(args.match)
+      if wid ~= p.win then return end
+      update_autoscroll_from_view(p)
+    end,
+  })
+
   scroll_to_bottom_now(p)
 end
 
@@ -211,16 +238,11 @@ function M.is_open()
 end
 
 function M.toggle()
-  local p = get_panel()
   if M.is_open() then
     M.close()
-  else
-    if not p.sid then
-      M.start_new()
-    else
-      M.open_panel()
-    end
+    return
   end
+  ensure_panel_for_current_tab()
 end
 
 function M.start_new()
@@ -310,6 +332,18 @@ local function replay_history(p, claude_id, cwd)
   return turns > 0
 end
 
+local function has_open_panel_for_cwd(p, cwd)
+  if not cwd then return false end
+  local runner = require("claude.runner")
+  for tab, op in pairs(panels) do
+    if tab ~= p.tab and op.sid then
+      local osess = runner.get_session(op.sid)
+      if osess and osess.cwd == cwd then return true end
+    end
+  end
+  return false
+end
+
 function M.resume_session(claude_id)
   if not claude_id or claude_id == "" then
     vim.notify("claude: missing claude_id", vim.log.levels.WARN)
@@ -319,6 +353,11 @@ function M.resume_session(claude_id)
   local runner = require("claude.runner")
   local store = require("claude.store")
   local cwd = vim.fn.getcwd()
+  if has_open_panel_for_cwd(p, cwd) then
+    vim.notify("claude: dialog already open for this directory in another tab — starting new", vim.log.levels.INFO)
+    M.start_new()
+    return
+  end
   local session
   for _, entry in ipairs(store.list_sessions(cwd)) do
     local s = store.load_path(entry.path)
@@ -353,7 +392,13 @@ end
 function M.resume_last()
   local p = get_panel()
   local runner = require("claude.runner")
-  local sid = runner.resume_from_pointer(vim.fn.getcwd())
+  local cwd = vim.fn.getcwd()
+  if has_open_panel_for_cwd(p, cwd) then
+    vim.notify("claude: dialog already open for this directory in another tab — starting new", vim.log.levels.INFO)
+    M.start_new()
+    return
+  end
+  local sid = runner.resume_from_pointer(cwd)
   if not sid then
     vim.notify("claude: no previous session to resume", vim.log.levels.WARN)
     M.start_new()
@@ -478,6 +523,24 @@ local function capture_visual_selection(bufnr)
   return ""
 end
 
+ensure_panel_for_current_tab = function()
+  local p = get_panel()
+  if M.is_open() then return p end
+  if p.sid then
+    M.open_panel()
+    return p
+  end
+  local cwd = vim.fn.getcwd()
+  local store = require("claude.store")
+  local ptr = store.read_pointer(cwd)
+  if ptr and not has_open_panel_for_cwd(p, cwd) then
+    M.resume_last()
+  else
+    M.start_new()
+  end
+  return p
+end
+
 function M.prompt_visual_chat()
   local origin_buf = vim.api.nvim_get_current_buf()
   local origin_win = vim.api.nvim_get_current_win()
@@ -492,27 +555,13 @@ function M.prompt_visual_chat()
   local ft = vim.bo[origin_buf].filetype or ""
   local context = string.format("```%s\n%s\n```", ft, sel)
 
-  local p = get_panel()
-  if not M.is_open() then
-    if p.sid then
-      M.open_panel()
-    else
-      M.start_new()
-    end
-  end
+  ensure_panel_for_current_tab()
   M.open_input({ return_to = origin_win, context = context })
 end
 
 function M.open_prompt_keep_focus()
   local origin = vim.api.nvim_get_current_win()
-  local p = get_panel()
-  if not M.is_open() then
-    if p.sid then
-      M.open_panel()
-    else
-      M.start_new()
-    end
-  end
+  ensure_panel_for_current_tab()
   M.open_input({ return_to = origin })
 end
 
@@ -521,6 +570,8 @@ end
 function M.append_user_prompt(sid, text)
   local p = find_panel_by_sid(sid)
   if not p then return end
+  -- new prompt: snap viewport back to bottom and re-enable autoscroll
+  p.autoscroll = true
   local lines = { "## You", "" }
   for _, l in ipairs(vim.split(text, "\n", { plain = true })) do
     table.insert(lines, l)
@@ -640,6 +691,15 @@ end
 
 function M.current_sid()
   return get_panel().sid
+end
+
+-- Test seams (do not use outside specs).
+function M._test_get_panel(tab)
+  return panels[tab or vim.api.nvim_get_current_tabpage()]
+end
+
+function M._test_set_autoscroll(p, v)
+  p.autoscroll = v
 end
 
 return M
