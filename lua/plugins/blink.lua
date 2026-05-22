@@ -48,6 +48,9 @@ return {
   },
   build = "cargo build --release",
   opts = {
+    enabled = function()
+      return vim.g.blink_cmp_enabled ~= false
+    end,
     cmdline = { enabled = false },
     sources = {
       default = { "lsp", "buffer", "snippets", "path" },

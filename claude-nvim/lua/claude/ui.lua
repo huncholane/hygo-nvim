@@ -541,19 +541,34 @@ ensure_panel_for_current_tab = function()
   return p
 end
 
+local function buf_display_path(buf)
+  local fname = vim.api.nvim_buf_get_name(buf)
+  if fname == "" then return "[No Name]" end
+  return vim.fn.fnamemodify(fname, ":.")
+end
+
 function M.prompt_visual_chat()
   local origin_buf = vim.api.nvim_get_current_buf()
   local origin_win = vim.api.nvim_get_current_win()
   if vim.fn.mode():match("^[vV\22]") then
     vim.cmd("noautocmd normal! \27")
   end
+  local s = vim.fn.getpos("'<")
+  local e = vim.fn.getpos("'>")
   local sel = capture_visual_selection(origin_buf)
   if sel == "" then
     vim.notify("claude: empty selection", vim.log.levels.WARN)
     return
   end
   local ft = vim.bo[origin_buf].filetype or ""
-  local context = string.format("```%s\n%s\n```", ft, sel)
+  local path = buf_display_path(origin_buf)
+  local sl, sc = s[2], s[3]
+  local el, ec = e[2], e[3]
+  -- For linewise selections '> column is huge (MAXCOL); clamp to line len.
+  local last_line = vim.api.nvim_buf_get_lines(origin_buf, el - 1, el, false)[1] or ""
+  if ec > #last_line then ec = math.max(1, #last_line) end
+  local range = string.format("%s:%d:%d-%d:%d", path, sl, sc, el, ec)
+  local context = string.format("Selection from `%s`:\n```%s\n%s\n```", range, ft, sel)
 
   ensure_panel_for_current_tab()
   M.open_input({ return_to = origin_win, context = context })

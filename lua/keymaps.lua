@@ -22,9 +22,14 @@ easymap("n", "<leader>,", ":Telescope current_folder<cr>", "Search Current Folde
 easymap("n", "<leader>m", ':exe "resize ".float2nr(&lines*0.8)<cr>', "80% Window")
 -- easymap("n", "<leader>s", ":Scratch<cr>", "Scratch")
 easymap("n", "<leader>.", ":Telescope all_files<cr>", "All Files")
-easymap("n", "<leader>i", function()
+easymap("n", "gri", function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ 0 }), { 0 })
 end, "Toggle Inlay Hints")
+easymap("n", "<leader>lt", function()
+  local on = vim.g.blink_cmp_enabled ~= false
+  vim.g.blink_cmp_enabled = not on
+  vim.notify("blink.cmp " .. (vim.g.blink_cmp_enabled and "on" or "off"))
+end, "Toggle Completion")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
@@ -110,6 +115,7 @@ vim.keymap.set("n", "<C-S-Up>", ":resize +2<CR>")
 -- -Gotos
 -- ########################################################################## --
 easymap("n", "gd", vim.lsp.buf.definition, "Goto Definition")
+easymap("n", "gD", vim.lsp.buf.type_definition, "Goto Type Definition")
 easymap({ "n", "v" }, "gy", '"+y', "System Clipboard Copy")
 easymap({ "n", "v" }, "gp", '"+p', "System Clipboard Paste")
 easymap("n", "gs", "<cmd>EditCurrentFiletype<cr>", "Filetype Settings")

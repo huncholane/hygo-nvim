@@ -6,6 +6,20 @@ local plugins = {
   { "folke/tokyonight.nvim" },
   { "mg979/vim-visual-multi" },
   {
+    "3rd/image.nvim",
+    opts = {
+      backend = "sixel",
+      processor = "magick_cli",
+      integrations = {
+        markdown = {
+          enabled = true,
+          only_render_image_at_cursor = true,
+          only_render_image_at_cursor_mode = "popup",
+        },
+      },
+    },
+  },
+  {
     "mason-org/mason.nvim",
     opts = {},
   },
