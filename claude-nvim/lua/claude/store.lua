@@ -1,5 +1,30 @@
 local M = {}
 
+--- Runtime config (populated by M.setup from the plugin's options).
+M.config = {
+  --- Max number of history entries to surface; nil/0 = unlimited.
+  history_limit = nil,
+}
+
+function M.setup(opts)
+  M.config.history_limit = opts and opts.history_limit or nil
+end
+
+--- Truncate a newest-first list to the configured history limit.
+---@param list table
+---@return table
+function M.apply_history_limit(list)
+  local limit = M.config.history_limit
+  if not limit or limit <= 0 or #list <= limit then
+    return list
+  end
+  local out = {}
+  for i = 1, limit do
+    out[i] = list[i]
+  end
+  return out
+end
+
 local function data_dir()
   local d = vim.fn.stdpath("data") .. "/claude-nvim"
   vim.fn.mkdir(d, "p")
@@ -90,7 +115,7 @@ function M.all_prompts(cwd)
     end
   end
   table.sort(out, function(a, b) return (a.ts or 0) > (b.ts or 0) end)
-  return out
+  return M.apply_history_limit(out)
 end
 
 function M.uuid()

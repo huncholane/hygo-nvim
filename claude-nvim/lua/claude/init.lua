@@ -7,6 +7,7 @@ local edit = require("claude.edit")
 local timetravel = require("claude.timetravel")
 local commit = require("claude.commit")
 local find = require("claude.find")
+local store = require("claude.store")
 
 ---@class ClaudeConfig
 local defaults = {
@@ -16,12 +17,16 @@ local defaults = {
   skip_permissions = false,
   --- Write raw stream events + cmd + exit codes to <data>/claude-nvim/debug.log
   debug = false,
+  --- Max number of history entries surfaced by the prompts/sessions pickers.
+  --- nil or 0 means unlimited (default: nil).
+  history_limit = nil,
 }
 
 --- Setup the Claude CLI wrapper plugin.
 ---@param opts? ClaudeConfig
 function M.setup(opts)
   opts = vim.tbl_deep_extend("force", defaults, opts or {})
+  store.setup(opts)
   ui.setup(opts)
   runner.setup(opts)
   edit.setup(opts)

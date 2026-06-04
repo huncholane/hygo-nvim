@@ -176,7 +176,7 @@ local function list_sessions()
     end
   end
   table.sort(out, function(a, b) return a.mtime > b.mtime end)
-  return out
+  return store.apply_history_limit(out)
 end
 
 function M.sessions_picker()
