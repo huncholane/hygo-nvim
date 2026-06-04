@@ -42,11 +42,14 @@ return {
   "saghen/blink.cmp",
   dependencies = {
     "rafamadriz/friendly-snippets",
+    "saghen/blink.lib",
     -- "tamago324/nlsp-settings.nvim",
     { "onsails/lspkind.nvim", config = lspkind_config },
     "kristijanhusak/vim-dadbod-completion",
   },
-  build = "cargo build --release",
+  build = function()
+    require("blink.cmp").build():pwait()
+  end,
   opts = {
     enabled = function()
       return vim.g.blink_cmp_enabled ~= false

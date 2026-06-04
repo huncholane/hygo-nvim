@@ -16,6 +16,18 @@ vim.api.nvim_create_user_command("DBUITab", function(_)
   vim.cmd("DBUI")
 end, { desc = "Open new tab in /tmp/sql with DBUI" })
 
+--- New buffer for given file type
+vim.api.nvim_create_user_command("Enew", function(opts)
+  vim.cmd("enew")
+  vim.bo.filetype = opts.args
+end, {
+  desc = "New buffer for file type",
+  nargs = 1,
+  complete = function(arglead)
+    return vim.fn.getcompletion(arglead, "filetype")
+  end,
+})
+
 -- ########################################################################## --
 -- -Scratch
 -- ########################################################################## --
@@ -65,10 +77,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*.zsh",
-  callback = function ()
+  callback = function()
     vim.bo.filetype = "sh"
     vim.bo.syntax = "sh"
-  end
+  end,
 })
 
 -- ########################################################################## --

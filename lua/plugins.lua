@@ -11,8 +11,10 @@ local plugins = {
       backend = "sixel",
       processor = "magick_cli",
       integrations = {
+        -- Disabled: sixel rendering under tmux throws on every cursor move
+        -- through a markdown file. Use :MarkdownPreview for rendered READMEs.
         markdown = {
-          enabled = true,
+          enabled = false,
           only_render_image_at_cursor = true,
           only_render_image_at_cursor_mode = "popup",
         },

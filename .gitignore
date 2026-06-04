@@ -6,3 +6,6 @@ debug
 foo.*
 *.log
 data
+
+# opensrc — vendored dependency sources (not tracked)
+opensrc/
