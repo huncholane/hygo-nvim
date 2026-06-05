@@ -36,7 +36,7 @@ end
 --- Buffer 
 easymap("n", "<leader>b", "Buffers")
 easymap("n", "<leader>b,", ":Telescope buffers<cr>", "Telescope Buffers")
-easymap("n", "<leader>bb", ":e #", "Last Buffer")
+easymap("n", "<leader>bb", ":e #<cr>", "Last Buffer")
 
 -- ########################################################################## --
 -- -Built in Lsp
