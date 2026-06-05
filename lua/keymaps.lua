@@ -11,7 +11,6 @@ vim.keymap.set({ "n", "v", "i" }, "<F1>", "")
 easymap("n", "<leader>o", "o<esc>cc", "New Line, No Comment")
 easymap("n", "<leader>O", "O<esc>cc", "New Line, No Comment")
 easymap("n", "<leader>k", ":SafeBD<cr>", "Close Buffer")
-easymap("n", "<leader>b", ":LastFile<cr>", "Last File")
 easymap("n", "<leader>q", ":silent! wa! | silent! qa!<cr>", "Quit")
 easymap("n", "<leader>;", "q:", "Elite Cmd")
 easymap("n", "<leader>f", ":Format<cr>", "Format")
@@ -33,6 +32,11 @@ end, "Toggle Completion")
 for i = 1, 9 do
   easymap("n", "<leader>" .. i, i .. "gt", "Tab " .. i)
 end
+
+--- Buffer 
+easymap("n", "<leader>b", "Buffers")
+easymap("n", "<leader>b,", ":Telescope buffers<cr>", "Telescope Buffers")
+easymap("n", "<leader>bb", ":e #", "Last Buffer")
 
 -- ########################################################################## --
 -- -Built in Lsp
