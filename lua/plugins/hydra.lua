@@ -39,7 +39,7 @@ return {
         { "=",     "<Cmd>wincmd =<CR>" },
         { "s",     "<Cmd>split<CR>" },
         { "v",     "<Cmd>vsplit<CR>" },
-        { "o",     "<Cmd>only<CR>" },
+        { "o",     "<Cmd>only<CR>",              { exit = true } },
         { "q",     "<Cmd>close<CR>",             { exit = true } },
         { "c",     "<Cmd>close<CR>",             { exit = true } },
         { "<Esc>", nil,                          { exit = true } },
