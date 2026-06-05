@@ -2,6 +2,35 @@ local M = {}
 
 local default_width = 80
 
+-- prompt window size + context-window size, overridden in M.setup
+local config = {
+  prompt = { width = 100, height = 16 },
+  context_window = 200000,
+}
+
+-- Resolve a dimension that is either absolute (> 1) or a fraction (<= 1).
+local function resolve_dim(val, total, lo, hi)
+  local n
+  if val and val <= 1 then
+    n = math.floor(total * val)
+  else
+    n = math.floor(val or 0)
+  end
+  return math.max(lo, math.min(n, hi))
+end
+
+-- "ctx 45.2k/200k (23%)" from a Claude usage block, or nil if unknown.
+local function format_ctx(usage)
+  if not usage then return nil end
+  local used = (usage.input_tokens or 0)
+    + (usage.cache_read_input_tokens or 0)
+    + (usage.cache_creation_input_tokens or 0)
+  if used <= 0 then return nil end
+  local win = config.context_window
+  local pct = math.floor(used / win * 100 + 0.5)
+  return string.format("ctx %.1fk/%dk (%d%%)", used / 1000, math.floor(win / 1000), pct)
+end
+
 -- panels keyed by tabpage handle
 local panels = {}
 
@@ -47,6 +76,17 @@ end
 
 local function spinner_text(p)
   return SPINNER_FRAMES[p.spinner.frame] .. " thinking…"
+end
+
+local function update_winbar(p)
+  if not p.win or not vim.api.nvim_win_is_valid(p.win) then return end
+  local ctx = format_ctx(p.ctx_usage)
+  if ctx then
+    -- escape % for winbar's statusline syntax
+    vim.wo[p.win].winbar = " Claude %=" .. ctx:gsub("%%", "%%%%") .. " "
+  else
+    vim.wo[p.win].winbar = " Claude "
+  end
 end
 
 local function scroll_to_bottom_now(p)
@@ -181,6 +221,11 @@ end
 
 function M.setup(opts)
   default_width = opts.width or 80
+  if opts.prompt then
+    config.prompt.width = opts.prompt.width or config.prompt.width
+    config.prompt.height = opts.prompt.height or config.prompt.height
+  end
+  config.context_window = opts.context_window or config.context_window
 
   vim.api.nvim_create_autocmd("TabClosed", {
     callback = function(ev)
@@ -210,6 +255,7 @@ function M.open_panel()
   vim.wo[p.win].linebreak = true
   vim.wo[p.win].number = false
   vim.wo[p.win].relativenumber = false
+  update_winbar(p)
   p.autoscroll = true
 
   vim.api.nvim_create_autocmd("WinScrolled", {
@@ -445,8 +491,11 @@ function M.open_input(opts)
   local context = opts.context
   local input_buf = ensure_prompt_buf()
 
-  local width = math.min(80, math.max(40, math.floor(vim.o.columns * 0.6)))
-  local height = 8
+  local width = resolve_dim(config.prompt.width, vim.o.columns, 40, vim.o.columns - 4)
+  local height = resolve_dim(config.prompt.height, vim.o.lines, 6, vim.o.lines - 4)
+  local ctx = format_ctx(require("claude.runner").get_usage(sid))
+  local base = context and "Claude prompt (with context)" or "Claude prompt"
+  local title = " " .. base .. (ctx and ("  ·  " .. ctx) or "") .. " — <C-s> send  <C-c> cancel "
   local win = vim.api.nvim_open_win(input_buf, true, {
     relative = "editor",
     row = math.floor((vim.o.lines - height) / 2),
@@ -455,8 +504,7 @@ function M.open_input(opts)
     height = height,
     style = "minimal",
     border = "rounded",
-    title = context and " Claude prompt (with context) — <C-s> send  <C-c> cancel "
-      or " Claude prompt — <C-s> send  <C-c> cancel ",
+    title = title,
     title_pos = "center",
   })
   local lc = vim.api.nvim_buf_line_count(input_buf)
@@ -701,6 +749,15 @@ function M.on_prompt_complete(sid, prompt, had_changes)
     if had_changes then
       append_lines(p, { "_recorded — " .. #(prompt.files or {}) .. " file(s) changed_", "" })
     end
+  end)
+end
+
+function M.update_context(sid, usage)
+  vim.schedule(function()
+    local p = find_panel_by_sid(sid)
+    if not p then return end
+    p.ctx_usage = usage
+    update_winbar(p)
   end)
 end
 

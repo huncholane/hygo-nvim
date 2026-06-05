@@ -133,6 +133,7 @@ local function handle_event(sid, evt)
     end
   elseif t == "assistant" and evt.message then
     local msg = evt.message
+    if msg.usage then st.last_usage = msg.usage end
     if msg.content then
       for _, block in ipairs(msg.content) do
         if block.type == "text" and block.text then
@@ -199,8 +200,10 @@ summary = input.pattern or ""
   elseif t == "user" and evt.message then
     -- tool results, ignore content for now
   elseif t == "result" then
+    if evt.usage and not st.last_usage then st.last_usage = evt.usage end
     flush_prompt(sid)
     ui.append_separator(sid)
+    ui.update_context(sid, st.last_usage)
   elseif t == "stream_event" then
     local e = evt.event
     if e and e.delta and e.delta.text then
@@ -376,6 +379,12 @@ end
 function M.get_session(sid)
   local st = active[sid]
   return st and st.session or nil
+end
+
+--- Latest usage block (input/cache token counts) seen for a session, if any.
+function M.get_usage(sid)
+  local st = active[sid]
+  return st and st.last_usage or nil
 end
 
 function M.cancel(sid)

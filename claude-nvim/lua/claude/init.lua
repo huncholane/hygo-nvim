@@ -20,6 +20,15 @@ local defaults = {
   --- Max number of history entries surfaced by the prompts/sessions pickers.
   --- nil or 0 means unlimited (default: nil).
   history_limit = nil,
+  --- Floating prompt window size. Each value is either an absolute cell count
+  --- (> 1) or a fraction of the editor (<= 1).
+  prompt = {
+    width = 100,
+    height = 16,
+  },
+  --- Context-window size (tokens) used to compute the usage % shown in the
+  --- prompt title and panel winbar. Default 200k.
+  context_window = 200000,
 }
 
 --- Setup the Claude CLI wrapper plugin.
